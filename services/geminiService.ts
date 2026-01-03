@@ -1,15 +1,15 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { CartItem } from "../types";
+import { CartItem } from "../types.ts";
 
 export async function getSmartDiscountAdvice(cart: CartItem[]) {
   if (cart.length === 0) return "Add items to the cart to see advice.";
 
-  // Use process.env.API_KEY directly to initialize GoogleGenAI client
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-  const cartDescription = cart.map(item => `${item.name} (x${item.quantity})`).join(", ");
-  
   try {
+    // Initialize inside the function to ensure process.env is accessed only when needed
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+    const cartDescription = cart.map(item => `${item.name} (x${item.quantity})`).join(", ");
+    
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Given these items in a POS cart: ${cartDescription}. 
