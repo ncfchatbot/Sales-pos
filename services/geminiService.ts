@@ -1,12 +1,12 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { CartItem } from "../types";
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export async function getSmartDiscountAdvice(cart: CartItem[]) {
   if (cart.length === 0) return "Add items to the cart to see advice.";
 
+  // Use process.env.API_KEY directly to initialize GoogleGenAI client
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   const cartDescription = cart.map(item => `${item.name} (x${item.quantity})`).join(", ");
   
   try {
