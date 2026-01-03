@@ -8,9 +8,23 @@ export interface Product {
   stock: number;
 }
 
+export interface PromotionTier {
+  quantity: number;
+  price: number;
+}
+
+export interface Promotion {
+  id: string;
+  name: string;
+  productIds: string[]; // Supports up to 100 SKUs
+  tiers: PromotionTier[];
+  isActive: boolean;
+}
+
 export interface CartItem extends Product {
   quantity: number;
   itemDiscount?: Discount;
+  originalPrice: number;
 }
 
 export enum DiscountType {
@@ -28,7 +42,7 @@ export interface OrderSummary {
   itemDiscountTotal: number;
   billDiscountAmount: number;
   total: number;
-  profit: number; // Added profit calculation
+  profit: number; 
 }
 
 export type TransactionStatus = 'completed' | 'cancelled';
@@ -59,5 +73,5 @@ export interface ShopSettings {
   logoType: 'emoji' | 'image';
 }
 
-export type View = 'dashboard' | 'pos' | 'stock' | 'reports' | 'settings';
+export type View = 'dashboard' | 'pos' | 'stock' | 'reports' | 'settings' | 'promotions';
 export type Language = 'TH' | 'LA' | 'EN';

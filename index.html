@@ -56,18 +56,27 @@
       .scrollbar-hide::-webkit-scrollbar {
         display: none;
       }
-      @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-        100% { transform: translateY(0px); }
+      
+      /* PRINT ENGINE STYLES */
+      @media print {
+        body * { visibility: hidden !important; }
+        #print-receipt, #print-receipt * { visibility: visible !important; }
+        #print-receipt { 
+          position: absolute; 
+          left: 0; 
+          top: 0; 
+          width: 100% !important; 
+          margin: 0 !important; 
+          padding: 0 !important; 
+        }
+        @page { size: auto; margin: 0; }
       }
-      .animate-float {
-        animation: float 6s ease-in-out infinite;
-      }
+      #print-receipt { display: block; position: fixed; left: -9999px; }
     </style>
   </head>
   <body>
     <div id="root"></div>
+    <div id="print-receipt"></div>
     <script type="module" src="index.tsx"></script>
   </body>
 </html>
