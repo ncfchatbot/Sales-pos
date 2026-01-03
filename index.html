@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gemini POS Pro | Ultra Modern</title>
+    <title>Gemini POS Pro | Luxury Edition</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -23,6 +23,10 @@
               danger: '#f43f5e',
               success: '#10b981',
               dark: '#0f172a'
+            },
+            borderRadius: {
+              '4xl': '2rem',
+              '5xl': '3rem',
             }
           }
         }
@@ -42,18 +46,27 @@
       body {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        background-color: #f8fafc;
       }
       .glass {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
       }
       .scrollbar-hide::-webkit-scrollbar {
         display: none;
       }
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+      }
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
     </style>
   </head>
-  <body class="bg-[#f8fafc] text-slate-900">
+  <body>
     <div id="root"></div>
   </body>
 </html>
