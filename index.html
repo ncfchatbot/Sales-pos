@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -64,26 +63,27 @@
       }
       #print-container { display: none; }
 
-      /* Mobile optimization */
       @media (max-width: 768px) {
         .mobile-safe-area { padding-bottom: env(safe-area-inset-bottom); }
       }
     </style>
-    <!-- Polyfill for older mobile browsers -->
     <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js"></script>
     <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@^19.2.3",
-        "react/": "https://esm.sh/react@^19.2.3/",
-        "react-dom": "https://esm.sh/react-dom@^19.2.3",
-        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-        "lucide-react": "https://esm.sh/lucide-react@0.460.0",
-        "xlsx": "https://esm.sh/xlsx@0.18.5",
-        "@google/genai": "https://esm.sh/@google/genai@^1.35.0"
-      }
-    }
-    </script>
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react/": "https://esm.sh/react@19.0.0/",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/": "https://esm.sh/react-dom@19.0.0/",
+    "lucide-react": "https://esm.sh/lucide-react@0.474.0",
+    "xlsx": "https://esm.sh/xlsx@0.18.5",
+    "@google/genai": "https://esm.sh/@google/genai@0.21.0",
+    "firebase/app": "https://esm.sh/firebase@11.3.0/app",
+    "firebase/firestore": "https://esm.sh/firebase@11.3.0/firestore?external=firebase/app",
+    "firebase/": "https://esm.sh/firebase@^12.7.0/"
+  }
+}
+</script>
   </head>
   <body>
     <div id="root">
@@ -91,7 +91,7 @@
         <div style="text-align: center;">
           <div style="width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #4338ca; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
           <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-          <p style="font-weight: 800; letter-spacing: 2px; font-size: 12px; opacity: 0.5;">INITIALIZING LUXURY POS...</p>
+          <p style="font-weight: 800; letter-spacing: 2px; font-size: 12px; opacity: 0.5;">RE-CALIBRATING SYSTEM...</p>
         </div>
       </div>
     </div>

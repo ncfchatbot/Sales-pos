@@ -20,14 +20,14 @@ import * as XLSX from 'xlsx';
 
 const App: React.FC = () => {
   const [storeId] = useState('PRO_TERMINAL_01');
-  const [language, setLanguage] = useState<Language>(() => (localStorage.getItem('pos_lang') as Language) || 'th');
+  const [language, setLanguage] = useState<Language>('th');
   const t = TRANSLATIONS[language];
 
   const [mode, setMode] = useState<AppMode>('DASHBOARD'); 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [storeName, setStoreName] = useState(() => localStorage.getItem('pos_store_name') || 'SMART POS PRO');
-  const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem('pos_logo_data') || 'https://placehold.co/200x200/4338ca/ffffff?text=POS');
-  const [themeColor, setThemeColor] = useState(() => localStorage.getItem('pos_theme_color') || '#4338ca');
+  const [storeName, setStoreName] = useState('SMART POS PRO');
+  const [logoUrl, setLogoUrl] = useState('https://placehold.co/200x200/4338ca/ffffff?text=POS');
+  const [themeColor, setThemeColor] = useState('#4338ca');
   
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<SaleRecord[]>([]);
@@ -54,18 +54,38 @@ const App: React.FC = () => {
   const bulkInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
+  // Load & Sync App Settings from Firestore
   useEffect(() => {
-    const unsubP = onSnapshot(`pos_v4/${storeId}/products`, s => {
+    const unsubSettings = onSnapshot(doc(getDb(), `pos_v4/${storeId}/settings/appConfig`), (s) => {
+      if (s.exists()) {
+        const data = s.data();
+        if (data.language) setLanguage(data.language);
+        if (data.storeName) setStoreName(data.storeName);
+        if (data.logoUrl) setLogoUrl(data.logoUrl);
+        if (data.themeColor) setThemeColor(data.themeColor);
+      }
+    });
+    return () => unsubSettings();
+  }, [storeId]);
+
+  // Sync Data collections
+  useEffect(() => {
+    const db = getDb();
+    const unsubP = onSnapshot(collection(db, `pos_v4/${storeId}/products`), s => {
       setProducts(s.docs.map(d => ({ ...d.data(), id: d.id } as Product)));
     });
-    const unsubS = onSnapshot(`pos_v4/${storeId}/sales`, s => {
+    const unsubS = onSnapshot(query(collection(db, `pos_v4/${storeId}/sales`), orderBy('timestamp', 'desc')), s => {
       setSales(s.docs.map(d => ({ ...d.data(), id: d.id } as SaleRecord)));
     });
-    const unsubPromos = onSnapshot(`pos_v4/${storeId}/promotions`, s => {
+    const unsubPromos = onSnapshot(collection(db, `pos_v4/${storeId}/promotions`), s => {
       setPromotions(s.docs.map(d => ({ ...d.data(), id: d.id } as Promotion)));
     });
     return () => { unsubP(); unsubS(); unsubPromos(); };
   }, [storeId]);
+
+  const updateAppSetting = async (key: string, value: any) => {
+    await setDoc(doc(getDb(), `pos_v4/${storeId}/settings/appConfig`), { [key]: value }, { merge: true });
+  };
 
   const formatMoney = (v: number) => {
     const sym = language === 'en' ? ' LAK' : ' ກີບ';
@@ -187,73 +207,8 @@ const App: React.FC = () => {
   const printBill = (sale: SaleRecord) => {
     const win = window.open('', '_blank');
     if (!win) return;
-    
-    const itemsHtml = sale.items.map(i => `
-      <tr>
-        <td style="padding: 12px 10px; border-bottom: 1px solid #edf2f7; font-size: 14px; line-height: 1.4; vertical-align: top; width: 65%;">
-          <div style="font-weight: 700; color: #1a202c;">${i.name}</div>
-          <div style="font-size: 11px; color: #718096; margin-top: 2px;">${formatMoney(i.price)} x ${i.quantity}</div>
-        </td>
-        <td style="padding: 12px 10px; border-bottom: 1px solid #edf2f7; text-align: right; font-weight: 800; color: #2d3748; vertical-align: top;">
-          ${formatMoney(i.price * i.quantity)}
-        </td>
-      </tr>
-    `).join('');
-
-    win.document.write(`
-      <html>
-        <head>
-          <title>Receipt ${sale.id}</title>
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-            body { font-family: 'Plus Jakarta Sans', sans-serif; padding: 40px; color: #1a202c; max-width: 600px; margin: auto; background: #fff; }
-            .card { border: 1px solid #e2e8f0; padding: 40px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-            .header { text-align: center; border-bottom: 2px solid #f7fafc; padding-bottom: 30px; margin-bottom: 30px; }
-            .logo { width: 100px; height: 100px; border-radius: 25px; margin-bottom: 15px; object-fit: cover; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-            table { width: 100%; border-collapse: collapse; }
-            .total-section { margin-top: 30px; padding-top: 25px; border-top: 2px solid #1a202c; }
-            .grand-total { font-size: 24px; font-weight: 800; color: #4338ca; }
-            .footer { margin-top: 40px; text-align: center; font-size: 13px; color: #a0aec0; line-height: 1.6; }
-            .info-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 20px; margin-bottom: 30px; font-size: 13px; background: #f8fafc; padding: 20px; border-radius: 15px; }
-            @media print { body { padding: 0; } .card { border: none; box-shadow: none; padding: 20px; } }
-          </style>
-        </head>
-        <body>
-          <div class="card">
-            <div class="header">
-              <img src="${logoUrl}" class="logo" />
-              <h1 style="margin:0; font-size: 28px; font-weight: 800; letter-spacing: -0.02em;">${storeName}</h1>
-              <div style="margin-top: 10px; font-weight: 600; color: #718096; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;">
-                INV: ${sale.id} &bull; ${new Date(sale.timestamp).toLocaleString()}
-              </div>
-            </div>
-            <div class="info-grid">
-              <div>
-                <div style="color: #a0aec0; font-weight: 800; font-size: 10px; margin-bottom: 5px; text-transform: uppercase;">Customer Info</div>
-                <div style="font-weight: 700;">${sale.customerName}</div>
-                <div style="color: #4a5568;">${sale.customerPhone}</div>
-              </div>
-              <div>
-                <div style="color: #a0aec0; font-weight: 800; font-size: 10px; margin-bottom: 5px; text-transform: uppercase;">Shipping & Destination</div>
-                <div style="font-weight: 700;">${sale.logistics}</div>
-                <div style="color: #4a5568; line-height: 1.2;">${sale.customerAddress}</div>
-              </div>
-            </div>
-            <table>
-              <thead><tr style="font-size: 11px; font-weight: 800; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #edf2f7;"><th style="text-align: left; padding: 10px;">Item Description</th><th style="text-align: right; padding: 10px;">Total</th></tr></thead>
-              <tbody>${itemsHtml}</tbody>
-            </table>
-            <div class="total-section">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 600;"><span style="color: #718096;">Subtotal</span><span>${formatMoney(sale.subtotal)}</span></div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; font-weight: 600; color: #f56565;"><span>Discount</span><span>-${formatMoney(sale.billDiscountValue)}</span></div>
-              <div style="display: flex; justify-content: space-between; align-items: center;" class="grand-total"><span>Grand Total</span><span>${formatMoney(sale.total)}</span></div>
-            </div>
-            <div class="footer"><div style="color: #2d3748; font-weight: 700; margin-bottom: 5px;">Payment: ${sale.paymentMethod} (${sale.paymentStatus})</div><div>Thank you for choosing ${storeName}. We hope to see you again soon!</div></div>
-          </div>
-          <script>window.print(); setTimeout(() => window.close(), 1000);</script>
-        </body>
-      </html>
-    `);
+    const itemsHtml = sale.items.map(i => `<tr><td style="padding:12px 10px; border-bottom:1px solid #edf2f7; font-size:14px; line-height:1.4; vertical-align:top; width:65%;"><div style="font-weight:700; color:#1a202c;">${i.name}</div><div style="font-size:11px; color:#718096; margin-top:2px;">${formatMoney(i.price)} x ${i.quantity}</div></td><td style="padding:12px 10px; border-bottom:1px solid #edf2f7; text-align:right; font-weight:800; color:#2d3748; vertical-align:top;">${formatMoney(i.price * i.quantity)}</td></tr>`).join('');
+    win.document.write(`<html><head><title>Receipt ${sale.id}</title><style>@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'); body { font-family: 'Plus Jakarta Sans', sans-serif; padding: 40px; color: #1a202c; max-width: 600px; margin: auto; background: #fff; } .card { border: 1px solid #e2e8f0; padding: 40px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); } .header { text-align: center; border-bottom: 2px solid #f7fafc; padding-bottom: 30px; margin-bottom: 30px; } .logo { width: 100px; height: 100px; border-radius: 25px; margin-bottom: 15px; object-fit: cover; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); } table { width: 100%; border-collapse: collapse; } .total-section { margin-top: 30px; padding-top: 25px; border-top: 2px solid #1a202c; } .grand-total { font-size: 24px; font-weight: 800; color: #4338ca; } .footer { margin-top: 40px; text-align: center; font-size: 13px; color: #a0aec0; line-height: 1.6; } .info-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 20px; margin-bottom: 30px; font-size: 13px; background: #f8fafc; padding: 20px; border-radius: 15px; } @media print { body { padding: 0; } .card { border: none; box-shadow: none; padding: 20px; } }</style></head><body><div class="card"><div class="header"><img src="${logoUrl}" class="logo" /><h1 style="margin:0; font-size: 28px; font-weight: 800; letter-spacing: -0.02em;">${storeName}</h1><div style="margin-top: 10px; font-weight: 600; color: #718096; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;">INV: ${sale.id} &bull; ${new Date(sale.timestamp).toLocaleString()}</div></div><div class="info-grid"><div><div style="color: #a0aec0; font-weight: 800; font-size: 10px; margin-bottom: 5px; text-transform: uppercase;">Customer Info</div><div style="font-weight: 700;">${sale.customerName}</div><div style="color: #4a5568;">${sale.customerPhone}</div></div><div><div style="color: #a0aec0; font-weight: 800; font-size: 10px; margin-bottom: 5px; text-transform: uppercase;">Shipping & Destination</div><div style="font-weight: 700;">${sale.logistics}</div><div style="color: #4a5568; line-height: 1.2;">${sale.customerAddress}</div></div></div><table><thead><tr style="font-size: 11px; font-weight: 800; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #edf2f7;"><th style="text-align: left; padding: 10px;">Item Description</th><th style="text-align: right; padding: 10px;">Total</th></tr></thead><tbody>${itemsHtml}</tbody></table><div class="total-section"><div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 600;"><span style="color: #718096;">Subtotal</span><span>${formatMoney(sale.subtotal)}</span></div><div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; font-weight: 600; color: #f56565;"><span>Discount</span><span>-${formatMoney(sale.billDiscountValue)}</span></div><div style="display: flex; justify-content: space-between; align-items: center;" class="grand-total"><span>Grand Total</span><span>${formatMoney(sale.total)}</span></div></div><div class="footer"><div style="color: #2d3748; font-weight: 700; margin-bottom: 5px;">Payment: ${sale.paymentMethod} (${sale.paymentStatus})</div><div>Thank you for choosing ${storeName}. We hope to see you again soon!</div></div></div><script>window.print(); setTimeout(() => window.close(), 1000);</script></body></html>`);
     win.document.close();
   };
 
@@ -261,14 +216,7 @@ const App: React.FC = () => {
     const win = window.open('', '_blank');
     if (!win) return;
     const currentT = TRANSLATIONS[language];
-    const rows = products.map(p => `
-      <tr>
-        <td style="border: 1px solid #ddd; padding: 10px; font-family: monospace; font-size: 11px;">${p.code}</td>
-        <td style="border: 1px solid #ddd; padding: 10px; font-weight: 700; font-size: 12px;">${p.name}</td>
-        <td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-size: 12px; font-weight: 800;">${p.stock}</td>
-        <td style="border: 1px solid #222; padding: 10px; width: 120px;"></td>
-      </tr>
-    `).join('');
+    const rows = products.map(p => `<tr><td style="border: 1px solid #ddd; padding: 10px; font-family: monospace; font-size: 11px;">${p.code}</td><td style="border: 1px solid #ddd; padding: 10px; font-weight: 700; font-size: 12px;">${p.name}</td><td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-size: 12px; font-weight: 800;">${p.stock}</td><td style="border: 1px solid #222; padding: 10px; width: 120px;"></td></tr>`).join('');
     win.document.write(`<html><head><title>${currentT.inventory_checklist}</title><style>@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap'); body { font-family: 'Plus Jakarta Sans', sans-serif; padding: 30px; } table { width: 100%; border-collapse: collapse; margin-top: 25px; } th { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; text-align: left; font-size: 10px; text-transform: uppercase; font-weight: 800; } h1 { margin-bottom: 5px; font-size: 26px; font-weight: 900; } p { color: #64748b; font-size: 11px; margin-top: 0; } .sig { border-top: 2px solid #000; width: 220px; text-align: center; padding-top: 10px; font-size: 10px; font-weight: 800; }</style></head><body><h1>${currentT.inventory_checklist}</h1><p>${storeName} | ${new Date().toLocaleString()}</p><table><thead><tr><th>${currentT.sku_code}</th><th>${currentT.product_name}</th><th>${currentT.system_stock}</th><th>${currentT.physical_count}</th></tr></thead><tbody>${rows}</tbody></table><div style="margin-top: 60px; display: flex; justify-content: space-between;"><div class="sig">${currentT.checker_sig}</div><div class="sig">${currentT.manager_sig}</div></div><script>window.print(); setTimeout(()=>window.close(), 500);</script></body></html>`);
     win.document.close();
   };
@@ -444,15 +392,9 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar currentMode={mode} onModeChange={setMode} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} language={language} setLanguage={(l) => { setLanguage(l); localStorage.setItem('pos_lang', l); }} storeName={storeName} onLogout={() => window.location.reload()} logoUrl={logoUrl} themeColor={themeColor} />
+      <Sidebar currentMode={mode} onModeChange={setMode} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} language={language} setLanguage={(l) => updateAppSetting('language', l)} storeName={storeName} onLogout={() => window.location.reload()} logoUrl={logoUrl} themeColor={themeColor} />
       <main className="flex-1 flex flex-col overflow-hidden bg-white relative">
-        <button 
-          onClick={() => setIsSidebarOpen(true)}
-          className="lg:hidden absolute top-6 left-6 z-[100] p-4 bg-white/80 backdrop-blur-md shadow-premium rounded-3xl text-slate-600 border border-slate-100 active:scale-95 transition-all"
-        >
-          <Menu size={24} />
-        </button>
-
+        <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden absolute top-6 left-6 z-[100] p-4 bg-white/80 backdrop-blur-md shadow-premium rounded-3xl text-slate-600 border border-slate-100 active:scale-95 transition-all"><Menu size={24} /></button>
         <div className="flex-1 overflow-hidden">
           {mode === 'DASHBOARD' && renderDashboard()}
           {mode === 'ORDERS' && renderPOS()}
@@ -472,12 +414,12 @@ const App: React.FC = () => {
                <div className="bg-white p-12 rounded-[3.5rem] border shadow-luxury space-y-10">
                  <div className="flex flex-col items-center gap-6">
                     <div className="w-40 h-40 rounded-[2.5rem] bg-slate-50 p-2 relative group overflow-hidden border-2 border-dashed border-slate-200 shadow-premium"><img src={logoUrl} className="w-full h-full object-cover rounded-[2rem]" alt="Store Logo" /><button onClick={() => logoInputRef.current?.click()} className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-opacity"><ImageIcon size={24}/><span className="text-[10px] font-black uppercase tracking-widest">Change Logo</span></button></div>
-                    <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (!file) return; const r = new FileReader(); r.onload = (ev) => { const d = ev.target?.result as string; setLogoUrl(d); localStorage.setItem('pos_logo_data', d); }; r.readAsDataURL(file); }} />
+                    <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (!file) return; const r = new FileReader(); r.onload = (ev) => { const d = ev.target?.result as string; updateAppSetting('logoUrl', d); }; r.readAsDataURL(file); }} />
                  </div>
-                 <div className="space-y-4"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Store Display Name</label><input value={storeName} onChange={e => { setStoreName(e.target.value); localStorage.setItem('pos_store_name', e.target.value); }} className="w-full p-6 bg-slate-50 border-none rounded-[2rem] font-black outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all" /></div>
+                 <div className="space-y-4"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Store Display Name</label><input value={storeName} onChange={e => updateAppSetting('storeName', e.target.value)} className="w-full p-6 bg-slate-50 border-none rounded-[2rem] font-black outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all" /></div>
                  <div className="space-y-4">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">{t.theme_choice}</label>
-                   <div className="flex flex-wrap gap-4 px-4 items-center">{['#4338ca', '#f43f5e', '#10b981', '#f59e0b', '#000000'].map(c => (<button key={c} onClick={() => { setThemeColor(c); localStorage.setItem('pos_theme_color', c); }} className={`w-12 h-12 rounded-full border-4 transition-all ${themeColor === c ? 'scale-125 border-slate-900 shadow-xl' : 'border-transparent'}`} style={{backgroundColor: c}} />))}<div className="flex items-center gap-3 ml-4 bg-slate-100 px-5 py-3 rounded-2xl border border-slate-200"><Palette size={18} className="text-slate-400" /><input type="color" value={themeColor} onChange={(e) => { setThemeColor(e.target.value); localStorage.setItem('pos_theme_color', e.target.value); }} className="w-10 h-10 rounded border-none cursor-pointer p-0 bg-transparent" /><span className="text-[11px] font-black font-mono text-slate-600 uppercase tracking-widest">{themeColor}</span></div></div>
+                   <div className="flex flex-wrap gap-4 px-4 items-center">{['#4338ca', '#f43f5e', '#10b981', '#f59e0b', '#000000'].map(c => (<button key={c} onClick={() => updateAppSetting('themeColor', c)} className={`w-12 h-12 rounded-full border-4 transition-all ${themeColor === c ? 'scale-125 border-slate-900 shadow-xl' : 'border-transparent'}`} style={{backgroundColor: c}} />))}<div className="flex items-center gap-3 ml-4 bg-slate-100 px-5 py-3 rounded-2xl border border-slate-200"><Palette size={18} className="text-slate-400" /><input type="color" value={themeColor} onChange={(e) => updateAppSetting('themeColor', e.target.value)} className="w-10 h-10 rounded border-none cursor-pointer p-0 bg-transparent" /><span className="text-[11px] font-black font-mono text-slate-600 uppercase tracking-widest">{themeColor}</span></div></div>
                  </div>
                </div>
              </div>
@@ -515,15 +457,7 @@ const App: React.FC = () => {
               <input value={showPromotionModal.name || ''} onChange={e => setShowPromotionModal({...showPromotionModal, name: e.target.value})} placeholder="Promo Name" className="w-full p-6 bg-slate-50 border-none rounded-[2rem] font-black outline-none" />
               <div className="space-y-2">
                 <div className="flex justify-between px-4"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Target SKUs (Comma separated)</label><span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Count: {showPromotionModal.targetProductIds?.length || 0} / 50</span></div>
-                <textarea 
-                  value={showPromotionModal.targetProductIds?.join(', ') || ''} 
-                  onChange={e => {
-                    const ids = e.target.value.split(',').map(s=>s.trim()).filter(s=>s);
-                    setShowPromotionModal({...showPromotionModal, targetProductIds: ids.slice(0, 50)});
-                  }} 
-                  placeholder="Enter SKUs separated by comma (e.g. A01, A02, B05...)" 
-                  className="w-full p-6 bg-slate-50 border-none rounded-[2rem] font-bold outline-none h-40 resize-none shadow-inner" 
-                />
+                <textarea value={showPromotionModal.targetProductIds?.join(', ') || ''} onChange={e => { const ids = e.target.value.split(',').map(s=>s.trim()).filter(s=>s); setShowPromotionModal({...showPromotionModal, targetProductIds: ids.slice(0, 50)}); }} placeholder="Enter SKUs separated by comma (e.g. A01, A02, B05...)" className="w-full p-6 bg-slate-50 border-none rounded-[2rem] font-bold outline-none h-40 resize-none shadow-inner" />
               </div>
               <div className="space-y-4">
                 <div className="flex justify-between items-center px-4"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Price Steps ({showPromotionModal.steps?.length || 0}/10)</p>{(showPromotionModal.steps?.length || 0) < 10 && (<button onClick={() => setShowPromotionModal({...showPromotionModal, steps: [...(showPromotionModal.steps || []), {minQty: (showPromotionModal.steps?.length || 0) + 1, price: 0}]})} className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">+ {t.add_step}</button>)}</div>

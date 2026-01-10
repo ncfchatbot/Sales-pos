@@ -1,87 +1,51 @@
+import { initializeApp, getApp, getApps, FirebaseApp } from "firebase/app";
+import { 
+  getFirestore, 
+  collection, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  updateDoc, 
+  deleteDoc, 
+  onSnapshot, 
+  query, 
+  orderBy,
+  Firestore
+} from "firebase/firestore";
 
-// Mock Firebase Service with Reactive Listeners
-const listeners: Record<string, Array<(snapshot: any) => void>> = {};
-
-const notify = (collectionPath: string) => {
-  if (listeners[collectionPath]) {
-    const data = JSON.parse(localStorage.getItem(`firebase_mock_${collectionPath}`) || '[]');
-    const snapshot = {
-      docs: data.map((item: any) => ({
-        id: item.id || 'unknown',
-        data: () => item
-      }))
-    };
-    listeners[collectionPath].forEach(cb => cb(snapshot));
-  }
+// --- PASTE YOUR FIREBASE CONFIG HERE ---
+// โปรดใส่ Config ของคุณจาก Firebase Console
+const firebaseConfig = {
+  apiKey: "AIzaSyD20V5lPSlcdjSrkB_6TF_cLorY7fuKTE0",
+  authDomain: "cfp-webapp-db.firebaseapp.com",
+  projectId: "cfp-webapp-db",
+  storageBucket: "cfp-webapp-db.firebasestorage.app",
+  messagingSenderId: "153424490844",
+  appId: "1:153424490844:web:c82e38ecf5f6f91394d199"
 };
 
-export const getDb = () => "localStorage_db";
+/**
+ * Initialize Firebase App
+ * ใน ESM environment เราต้องมั่นใจว่าใช้ Instance เดียวกันทั้งหมด
+ */
+const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-export const collection = (db: any, ...pathSegments: string[]) => pathSegments.join('/');
+/**
+ * บังคับให้ getFirestore รับ app object เพื่อยืนยันว่า
+ * Firestore service จะถูกผูกกับ App instance ที่ถูกต้อง
+ */
+const db: Firestore = getFirestore(app);
 
-export const doc = (db: any, ...pathSegments: string[]) => pathSegments.join('/');
+export const getDb = (): Firestore => db;
 
-export const query = (colRef: any, ...constraints: any[]) => colRef;
-
-export const orderBy = (field: string, direction: string = 'asc') => ({ field, direction });
-
-export const onSnapshot = (ref: string, callback: (snapshot: any) => void) => {
-  if (!listeners[ref]) listeners[ref] = [];
-  listeners[ref].push(callback);
-  
-  // Initial call
-  const data = JSON.parse(localStorage.getItem(`firebase_mock_${ref}`) || '[]');
-  callback({
-    docs: data.map((item: any) => ({
-      id: item.id || 'unknown',
-      data: () => item
-    }))
-  });
-
-  return () => {
-    listeners[ref] = listeners[ref].filter(cb => cb !== callback);
-  };
-};
-
-export const setDoc = async (docRef: string, data: any, options?: { merge: boolean }) => {
-  const pathParts = docRef.split('/');
-  const collectionPath = pathParts.slice(0, -1).join('/');
-  const docId = pathParts[pathParts.length - 1];
-
-  const currentData = JSON.parse(localStorage.getItem(`firebase_mock_${collectionPath}`) || '[]');
-  const existingIndex = currentData.findIndex((item: any) => item.id === docId);
-
-  let newData;
-  if (existingIndex >= 0) {
-    newData = [...currentData];
-    newData[existingIndex] = options?.merge ? { ...newData[existingIndex], ...data } : { ...data, id: docId };
-  } else {
-    newData = [...currentData, { ...data, id: docId }];
-  }
-
-  localStorage.setItem(`firebase_mock_${collectionPath}`, JSON.stringify(newData));
-  notify(collectionPath);
-};
-
-export const getDoc = async (docRef: string) => {
-  const pathParts = docRef.split('/');
-  const collectionPath = pathParts.slice(0, -1).join('/');
-  const docId = pathParts[pathParts.length - 1];
-  const currentData = JSON.parse(localStorage.getItem(`firebase_mock_${collectionPath}`) || '[]');
-  const docData = currentData.find((item: any) => item.id === docId);
-  return { exists: () => !!docData, data: () => docData };
-};
-
-export const updateDoc = async (docRef: string, data: any) => setDoc(docRef, data, { merge: true });
-
-export const deleteDoc = async (docRef: string) => {
-  const pathParts = docRef.split('/');
-  const collectionPath = pathParts.slice(0, -1).join('/');
-  const docId = pathParts[pathParts.length - 1];
-
-  const currentData = JSON.parse(localStorage.getItem(`firebase_mock_${collectionPath}`) || '[]');
-  const newData = currentData.filter((item: any) => item.id !== docId);
-
-  localStorage.setItem(`firebase_mock_${collectionPath}`, JSON.stringify(newData));
-  notify(collectionPath);
+export { 
+  collection, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  updateDoc, 
+  deleteDoc, 
+  onSnapshot, 
+  query, 
+  orderBy 
 };
