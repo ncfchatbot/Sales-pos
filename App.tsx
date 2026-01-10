@@ -79,7 +79,6 @@ const App: React.FC = () => {
         return { ...item, price: item.originalPrice };
       }
       
-      // Find the highest minQty step that the current quantity meets
       const sortedSteps = [...promo.steps].sort((a, b) => b.minQty - a.minQty);
       const applicableStep = sortedSteps.find(s => item.quantity >= s.minQty);
       
@@ -114,7 +113,6 @@ const App: React.FC = () => {
     setCart(applyPromotions(newCart));
   };
 
-  // Trigger recalculation if promotions state changes
   useEffect(() => {
     if (cart.length > 0) {
       setCart(applyPromotions(cart));
@@ -203,66 +201,16 @@ const App: React.FC = () => {
           <title>Receipt ${sale.id}</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-            body { 
-              font-family: 'Plus Jakarta Sans', sans-serif; 
-              padding: 40px; 
-              color: #1a202c; 
-              max-width: 600px; 
-              margin: auto; 
-              background: #fff;
-            }
-            .card {
-              border: 1px solid #e2e8f0;
-              padding: 40px;
-              border-radius: 20px;
-              box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            }
-            .header { 
-              text-align: center; 
-              border-bottom: 2px solid #f7fafc; 
-              padding-bottom: 30px; 
-              margin-bottom: 30px; 
-            }
-            .logo { 
-              width: 100px; 
-              height: 100px; 
-              border-radius: 25px; 
-              margin-bottom: 15px;
-              object-fit: cover;
-              box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-            }
+            body { font-family: 'Plus Jakarta Sans', sans-serif; padding: 40px; color: #1a202c; max-width: 600px; margin: auto; background: #fff; }
+            .card { border: 1px solid #e2e8f0; padding: 40px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+            .header { text-align: center; border-bottom: 2px solid #f7fafc; padding-bottom: 30px; margin-bottom: 30px; }
+            .logo { width: 100px; height: 100px; border-radius: 25px; margin-bottom: 15px; object-fit: cover; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
             table { width: 100%; border-collapse: collapse; }
-            .total-section { 
-              margin-top: 30px; 
-              padding-top: 25px; 
-              border-top: 2px solid #1a202c; 
-            }
-            .grand-total { 
-              font-size: 24px; 
-              font-weight: 800; 
-              color: #4338ca; 
-            }
-            .footer { 
-              margin-top: 40px; 
-              text-align: center; 
-              font-size: 13px; 
-              color: #a0aec0; 
-              line-height: 1.6;
-            }
-            .info-grid {
-              display: grid;
-              grid-template-cols: 1fr 1fr;
-              gap: 20px;
-              margin-bottom: 30px;
-              font-size: 13px;
-              background: #f8fafc;
-              padding: 20px;
-              border-radius: 15px;
-            }
-            @media print {
-              body { padding: 0; }
-              .card { border: none; box-shadow: none; padding: 20px; }
-            }
+            .total-section { margin-top: 30px; padding-top: 25px; border-top: 2px solid #1a202c; }
+            .grand-total { font-size: 24px; font-weight: 800; color: #4338ca; }
+            .footer { margin-top: 40px; text-align: center; font-size: 13px; color: #a0aec0; line-height: 1.6; }
+            .info-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 20px; margin-bottom: 30px; font-size: 13px; background: #f8fafc; padding: 20px; border-radius: 15px; }
+            @media print { body { padding: 0; } .card { border: none; box-shadow: none; padding: 20px; } }
           </style>
         </head>
         <body>
@@ -274,7 +222,6 @@ const App: React.FC = () => {
                 INV: ${sale.id} &bull; ${new Date(sale.timestamp).toLocaleString()}
               </div>
             </div>
-            
             <div class="info-grid">
               <div>
                 <div style="color: #a0aec0; font-weight: 800; font-size: 10px; margin-bottom: 5px; text-transform: uppercase;">Customer Info</div>
@@ -287,36 +234,16 @@ const App: React.FC = () => {
                 <div style="color: #4a5568; line-height: 1.2;">${sale.customerAddress}</div>
               </div>
             </div>
-
             <table>
-              <thead>
-                <tr style="font-size: 11px; font-weight: 800; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #edf2f7;">
-                  <th style="text-align: left; padding: 10px;">Item Description</th>
-                  <th style="text-align: right; padding: 10px;">Total</th>
-                </tr>
-              </thead>
+              <thead><tr style="font-size: 11px; font-weight: 800; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #edf2f7;"><th style="text-align: left; padding: 10px;">Item Description</th><th style="text-align: right; padding: 10px;">Total</th></tr></thead>
               <tbody>${itemsHtml}</tbody>
             </table>
-
             <div class="total-section">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 600;">
-                <span style="color: #718096;">Subtotal</span>
-                <span>${formatMoney(sale.subtotal)}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; font-weight: 600; color: #f56565;">
-                <span>Discount</span>
-                <span>-${formatMoney(sale.billDiscountValue)}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;" class="grand-total">
-                <span>Grand Total</span>
-                <span>${formatMoney(sale.total)}</span>
-              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 600;"><span style="color: #718096;">Subtotal</span><span>${formatMoney(sale.subtotal)}</span></div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; font-weight: 600; color: #f56565;"><span>Discount</span><span>-${formatMoney(sale.billDiscountValue)}</span></div>
+              <div style="display: flex; justify-content: space-between; align-items: center;" class="grand-total"><span>Grand Total</span><span>${formatMoney(sale.total)}</span></div>
             </div>
-
-            <div class="footer">
-              <div style="color: #2d3748; font-weight: 700; margin-bottom: 5px;">Payment: ${sale.paymentMethod} (${sale.paymentStatus})</div>
-              <div>Thank you for choosing ${storeName}. We hope to see you again soon!</div>
-            </div>
+            <div class="footer"><div style="color: #2d3748; font-weight: 700; margin-bottom: 5px;">Payment: ${sale.paymentMethod} (${sale.paymentStatus})</div><div>Thank you for choosing ${storeName}. We hope to see you again soon!</div></div>
           </div>
           <script>window.print(); setTimeout(() => window.close(), 1000);</script>
         </body>
@@ -347,15 +274,11 @@ const App: React.FC = () => {
     const totalCost = validSales.reduce((a, s) => a + s.items.reduce((sum, i) => sum + (i.cost * i.quantity), 0), 0);
     const profit = totalRev - totalCost;
     const stockVal = products.reduce((a, b) => a + (b.stock * b.cost), 0);
-
     const custMap: any = {};
     validSales.forEach(s => custMap[s.customerName] = (custMap[s.customerName] || 0) + s.total);
     const topCust = Object.entries(custMap).sort((a:any, b:any) => b[1] - a[1]).slice(0, 10);
-
     const prodRevMap: any = {};
-    validSales.forEach(s => s.items.forEach(i => {
-      prodRevMap[i.name] = (prodRevMap[i.name] || 0) + (i.price * i.quantity);
-    }));
+    validSales.forEach(s => s.items.forEach(i => { prodRevMap[i.name] = (prodRevMap[i.name] || 0) + (i.price * i.quantity); }));
     const topRev = Object.entries(prodRevMap).sort((a:any, b:any) => b[1] - a[1]).slice(0, 10);
 
     return (
@@ -374,28 +297,17 @@ const App: React.FC = () => {
             <div className="bg-amber-50 p-4 rounded-3xl text-amber-500"><Box size={32}/></div>
           </div>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-white p-8 rounded-[3rem] shadow-premium border border-white space-y-6">
             <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400 flex items-center gap-2"><Tag size={14}/> {t.top_products}</h3>
             <div className="space-y-4">
-              {topRev.map(([name, val]: any, idx) => (
-                <div key={idx} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
-                  <span className="font-bold text-slate-700 text-xs">{idx+1}. {name}</span>
-                  <span className="font-black text-indigo-600 text-xs">{formatMoney(val)}</span>
-                </div>
-              ))}
+              {topRev.map(([name, val]: any, idx) => (<div key={idx} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl"><span className="font-bold text-slate-700 text-xs">{idx+1}. {name}</span><span className="font-black text-indigo-600 text-xs">{formatMoney(val)}</span></div>))}
             </div>
           </div>
           <div className="bg-white p-8 rounded-[3rem] shadow-premium border border-white space-y-6">
             <h3 className="font-black text-[10px] uppercase tracking-widest text-slate-400 flex items-center gap-2"><Users size={14}/> {t.top_customers}</h3>
             <div className="space-y-4">
-              {topCust.map(([name, val]: any, idx) => (
-                <div key={idx} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
-                  <span className="font-bold text-slate-700 text-xs">{idx+1}. {name}</span>
-                  <span className="font-black text-emerald-600 text-xs">{formatMoney(val)}</span>
-                </div>
-              ))}
+              {topCust.map(([name, val]: any, idx) => (<div key={idx} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl"><span className="font-bold text-slate-700 text-xs">{idx+1}. {name}</span><span className="font-black text-emerald-600 text-xs">{formatMoney(val)}</span></div>))}
             </div>
           </div>
         </div>
@@ -415,10 +327,7 @@ const App: React.FC = () => {
           <div className="flex-1 overflow-y-auto grid grid-cols-2 xl:grid-cols-4 gap-6 pr-4 custom-scrollbar">
             {filtered.map(p => (
               <button key={p.id} onClick={() => addToCart(p)} className="bg-white p-6 rounded-[2.5rem] border border-white shadow-premium hover:shadow-luxury hover:-translate-y-2 transition-all text-left flex flex-col justify-between group active:scale-95">
-                <div className="space-y-2">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{p.code}</p>
-                  <p className="font-black text-slate-800 line-clamp-2 leading-tight">{p.name}</p>
-                </div>
+                <div className="space-y-2"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{p.code}</p><p className="font-black text-slate-800 line-clamp-2 leading-tight">{p.name}</p></div>
                 <div className="mt-4 flex justify-between items-end"><p className="font-black text-indigo-600 text-xl tracking-tighter">{formatMoney(p.price)}</p><div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all"><Plus size={20} /></div></div>
               </button>
             ))}
@@ -436,7 +345,6 @@ const App: React.FC = () => {
               ))}
               {cart.length === 0 && <div className="text-center py-10 opacity-20"><ShoppingCart size={64} className="mx-auto mb-4"/><p className="text-[10px] font-black uppercase tracking-widest">Cart is empty</p></div>}
             </div>
-            
             <div className="pt-6 border-t space-y-5">
               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.cust_name} & Info</h4>
               <div className="grid grid-cols-2 gap-4">
@@ -452,16 +360,10 @@ const App: React.FC = () => {
               </div>
               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.payment_method} & {t.order_status}</h4>
               <div className="grid grid-cols-2 gap-4">
-                <select value={customer.paymentMethod} onChange={e => setCustomer({...customer, paymentMethod: e.target.value as any})} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold">
-                  <option value="Cash">Cash</option><option value="Transfer">Transfer</option><option value="COD">COD</option>
-                </select>
-                <select value={customer.paymentStatus} onChange={e => setCustomer({...customer, paymentStatus: e.target.value as any})} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold">
-                  <option value="Paid">Paid</option><option value="Outstanding">Outstanding</option>
-                </select>
+                <select value={customer.paymentMethod} onChange={e => setCustomer({...customer, paymentMethod: e.target.value as any})} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold"><option value="Cash">Cash</option><option value="Transfer">Transfer</option><option value="COD">COD</option></select>
+                <select value={customer.paymentStatus} onChange={e => setCustomer({...customer, paymentStatus: e.target.value as any})} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold"><option value="Paid">Paid</option><option value="Outstanding">Outstanding</option></select>
               </div>
-              <select value={customer.orderStatus} onChange={e => setCustomer({...customer, orderStatus: e.target.value as any})} className="w-full p-4 bg-indigo-50 text-indigo-700 rounded-2xl text-[10px] font-black uppercase">
-                <option value="Completed">Auto-Complete (Cut Stock)</option><option value="Pending">Pending (No Cut Stock)</option>
-              </select>
+              <select value={customer.orderStatus} onChange={e => setCustomer({...customer, orderStatus: e.target.value as any})} className="w-full p-4 bg-indigo-50 text-indigo-700 rounded-2xl text-[10px] font-black uppercase"><option value="Completed">Auto-Complete (Cut Stock)</option><option value="Pending">Pending (No Cut Stock)</option></select>
             </div>
           </div>
           <div className="p-8 bg-slate-50 border-t space-y-6">
@@ -482,52 +384,20 @@ const App: React.FC = () => {
         <div><h2 className="text-3xl font-black uppercase tracking-tighter">{t.stock}</h2><p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{t.inventory_checklist}</p></div>
         <div className="flex gap-3">
           <button onClick={() => { setEditingProduct({ name: '', code: '', cost: 0, price: 0, stock: 0, category: 'ทั่วไป' }); setShowProductModal(true); }} className="px-6 py-4 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-luxury" style={{ backgroundColor: themeColor }}><Plus size={16}/> Add Item</button>
-          <button onClick={() => {
-            const ws = XLSX.utils.json_to_sheet([{ 'รหัสสินค้า': 'SKU001', 'ชื่อสินค้า': 'ตัวอย่างสินค้า', 'ราคาทุน': 5000, 'ราคาขาย': 15000, 'สต็อก': 100, 'หมวดหมู่': 'ทั่วไป' }]);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Template");
-            XLSX.writeFile(wb, "Stock_Template.xlsx");
-          }} className="px-6 py-4 bg-white border rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-premium hover:bg-slate-50 transition-all"><Download size={16}/> {t.download_template}</button>
+          <button onClick={() => { const ws = XLSX.utils.json_to_sheet([{ 'รหัสสินค้า': 'SKU001', 'ชื่อสินค้า': 'ตัวอย่างสินค้า', 'ราคาทุน': 5000, 'ราคาขาย': 15000, 'สต็อก': 100, 'หมวดหมู่': 'ทั่วไป' }]); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Template"); XLSX.writeFile(wb, "Stock_Template.xlsx"); }} className="px-6 py-4 bg-white border rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-premium hover:bg-slate-50 transition-all"><Download size={16}/> {t.download_template}</button>
           <button onClick={() => bulkInputRef.current?.click()} className="px-6 py-4 bg-white border rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-premium hover:bg-slate-50 transition-all"><FileUp size={16}/> {t.import_excel}</button>
           <input type="file" ref={bulkInputRef} className="hidden" accept=".xlsx, .xls" onChange={handleBulkUpload} />
           <button onClick={printInventory} className="px-6 py-4 bg-white border rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-premium hover:bg-slate-50 transition-all"><Printer size={16}/> Print</button>
         </div>
       </div>
-
       <div className="flex-1 bg-white rounded-[3rem] shadow-premium border border-white overflow-hidden flex flex-col">
-        <div className="p-8 border-b bg-slate-50/50 flex items-center gap-4">
-          <Search className="text-slate-300" size={20}/><input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search Name or Code..." className="bg-transparent border-none outline-none font-bold text-sm w-full" />
-        </div>
+        <div className="p-8 border-b bg-slate-50/50 flex items-center gap-4"><Search className="text-slate-300" size={20}/><input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search Name or Code..." className="bg-transparent border-none outline-none font-bold text-sm w-full" /></div>
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <table className="w-full text-left">
-            <thead className="sticky top-0 bg-white border-b z-10">
-              <tr>
-                <th className="p-6 text-[10px] font-black uppercase text-slate-400">Code</th>
-                <th className="p-6 text-[10px] font-black uppercase text-slate-400">Product Name</th>
-                <th className="p-6 text-[10px] font-black uppercase text-slate-400">Category</th>
-                <th className="p-6 text-[10px] font-black uppercase text-slate-400 text-right">Price</th>
-                <th className="p-6 text-[10px] font-black uppercase text-slate-400 text-center">Stock</th>
-                <th className="p-6 text-right">Actions</th>
-              </tr>
-            </thead>
+            <thead className="sticky top-0 bg-white border-b z-10"><tr><th className="p-6 text-[10px] font-black uppercase text-slate-400">Code</th><th className="p-6 text-[10px] font-black uppercase text-slate-400">Product Name</th><th className="p-6 text-[10px] font-black uppercase text-slate-400">Category</th><th className="p-6 text-[10px] font-black uppercase text-slate-400 text-right">Price</th><th className="p-6 text-[10px] font-black uppercase text-slate-400 text-center">Stock</th><th className="p-6 text-right">Actions</th></tr></thead>
             <tbody className="divide-y divide-slate-50">
               {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.code.toLowerCase().includes(searchTerm.toLowerCase())).map(p => (
-                <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="p-6 font-mono text-xs font-bold text-slate-400">{p.code}</td>
-                  <td className="p-6 font-black text-slate-800">{p.name}</td>
-                  <td className="p-6"><span className="px-4 py-1.5 bg-slate-100 rounded-full text-[9px] font-black uppercase text-slate-500">{p.category}</span></td>
-                  <td className="p-6 text-right font-black text-indigo-600">{formatMoney(p.price)}</td>
-                  <td className="p-6 text-center">
-                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase ${p.stock <= 10 ? 'bg-rose-50 text-rose-600 animate-pulse' : 'bg-slate-50 text-slate-600'}`}>
-                      {p.stock} Units
-                    </span>
-                  </td>
-                  <td className="p-6 text-right">
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => { setEditingProduct(p); setShowProductModal(true); }} className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all"><Edit3 size={16}/></button>
-                      <button onClick={async () => { if(confirm('Delete this product?')) await deleteDoc(doc(getDb(), `pos_v4/${storeId}/products`, p.id)); }} className="p-2.5 bg-rose-50 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all"><Trash2 size={16}/></button>
-                    </div>
-                  </td>
-                </tr>
+                <tr key={p.id} className="hover:bg-slate-50 transition-colors group"><td className="p-6 font-mono text-xs font-bold text-slate-400">{p.code}</td><td className="p-6 font-black text-slate-800">{p.name}</td><td className="p-6"><span className="px-4 py-1.5 bg-slate-100 rounded-full text-[9px] font-black uppercase text-slate-500">{p.category}</span></td><td className="p-6 text-right font-black text-indigo-600">{formatMoney(p.price)}</td><td className="p-6 text-center"><span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase ${p.stock <= 10 ? 'bg-rose-50 text-rose-600 animate-pulse' : 'bg-slate-50 text-slate-600'}`}>{p.stock} Units</span></td><td className="p-6 text-right"><div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => { setEditingProduct(p); setShowProductModal(true); }} className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all"><Edit3 size={16}/></button><button onClick={async () => { if(confirm('Delete this product?')) await deleteDoc(doc(getDb(), `pos_v4/${storeId}/products`, p.id)); }} className="p-2.5 bg-rose-50 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all"><Trash2 size={16}/></button></div></td></tr>
               ))}
             </tbody>
           </table>
@@ -545,45 +415,14 @@ const App: React.FC = () => {
           <button className="px-6 py-4 bg-white border rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-premium hover:bg-slate-50 transition-all"><FileSpreadsheet size={16}/> Export Excel</button>
         </div>
       </div>
-
       <div className="flex-1 bg-white rounded-[3rem] shadow-premium border border-white overflow-hidden flex flex-col">
-        <div className="p-8 border-b bg-slate-50/50 flex items-center gap-4">
-          <Search className="text-slate-300" size={20}/><input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search ID, Customer, Phone..." className="bg-transparent border-none outline-none font-bold text-sm w-full" />
-        </div>
+        <div className="p-8 border-b bg-slate-50/50 flex items-center gap-4"><Search className="text-slate-300" size={20}/><input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search ID, Customer, Phone..." className="bg-transparent border-none outline-none font-bold text-sm w-full" /></div>
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <table className="w-full text-left">
-            <thead className="sticky top-0 bg-white border-b z-10">
-              <tr>
-                <th className="p-6 text-[10px] font-black uppercase text-slate-400">Order ID / Date</th>
-                <th className="p-6 text-[10px] font-black uppercase text-slate-400">Customer Info</th>
-                <th className="p-6 text-[10px] font-black uppercase text-slate-400">{t.status}</th>
-                <th className="p-6 text-[10px] font-black uppercase text-slate-400 text-right">{t.grand_total}</th>
-                <th className="p-6 text-right">Operations</th>
-              </tr>
-            </thead>
+            <thead className="sticky top-0 bg-white border-b z-10"><tr><th className="p-6 text-[10px] font-black uppercase text-slate-400">Order ID / Date</th><th className="p-6 text-[10px] font-black uppercase text-slate-400">Customer Info</th><th className="p-6 text-[10px] font-black uppercase text-slate-400">{t.status}</th><th className="p-6 text-[10px] font-black uppercase text-slate-400 text-right">{t.grand_total}</th><th className="p-6 text-right">Operations</th></tr></thead>
             <tbody className="divide-y divide-slate-50">
               {sales.filter(s => s.id.toLowerCase().includes(searchTerm.toLowerCase()) || s.customerName.toLowerCase().includes(searchTerm.toLowerCase()) || s.customerPhone.includes(searchTerm)).map(s => (
-                <tr key={s.id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="p-6"><p className="font-mono text-xs font-bold text-slate-400 mb-1">{s.id}</p><p className="text-[10px] font-black text-slate-300 uppercase">{new Date(s.timestamp).toLocaleString()}</p></td>
-                  <td className="p-6"><p className="font-black text-slate-800">{s.customerName}</p><p className="text-[10px] font-bold text-slate-400">{s.customerPhone}</p></td>
-                  <td className="p-6">
-                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase ${
-                      s.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' : 
-                      s.status === 'Cancelled' ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-600'
-                    }`}>{s.status}</span>
-                  </td>
-                  <td className="p-6 text-right font-black text-indigo-600">{formatMoney(s.total)}</td>
-                  <td className="p-6 text-right">
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {s.status === 'Pending' && (
-                        <button onClick={async () => { if(confirm(t.confirm_approve)) await updateDoc(doc(getDb(), `pos_v4/${storeId}/sales`, s.id), { status: 'Completed' }); }} className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all"><CheckCircle2 size={16}/></button>
-                      )}
-                      <button onClick={() => setEditingSale(s)} className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all"><Edit3 size={16}/></button>
-                      <button onClick={() => printBill(s)} className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"><Printer size={16}/></button>
-                      <button onClick={async () => { if(confirm(t.confirm_cancel)) await updateDoc(doc(getDb(), `pos_v4/${storeId}/sales`, s.id), { status: 'Cancelled' }); }} className="p-2.5 bg-rose-50 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all"><Ban size={16}/></button>
-                    </div>
-                  </td>
-                </tr>
+                <tr key={s.id} className="hover:bg-slate-50 transition-colors group"><td className="p-6"><p className="font-mono text-xs font-bold text-slate-400 mb-1">{s.id}</p><p className="text-[10px] font-black text-slate-300 uppercase">{new Date(s.timestamp).toLocaleString()}</p></td><td className="p-6"><p className="font-black text-slate-800">{s.customerName}</p><p className="text-[10px] font-bold text-slate-400">{s.customerPhone}</p></td><td className="p-6"><span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase ${s.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' : s.status === 'Cancelled' ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-600'}`}>{s.status}</span></td><td className="p-6 text-right font-black text-indigo-600">{formatMoney(s.total)}</td><td className="p-6 text-right"><div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">{s.status === 'Pending' && (<button onClick={async () => { if(confirm(t.confirm_approve)) await updateDoc(doc(getDb(), `pos_v4/${storeId}/sales`, s.id), { status: 'Completed' }); }} className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all"><CheckCircle2 size={16}/></button>)}<button onClick={() => setEditingSale(s)} className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all"><Edit3 size={16}/></button><button onClick={() => printBill(s)} className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"><Printer size={16}/></button><button onClick={async () => { if(confirm(t.confirm_cancel)) await updateDoc(doc(getDb(), `pos_v4/${storeId}/sales`, s.id), { status: 'Cancelled' }); }} className="p-2.5 bg-rose-50 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all"><Ban size={16}/></button></div></td></tr>
               ))}
             </tbody>
           </table>
@@ -594,11 +433,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar 
-        currentMode={mode} onModeChange={setMode} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} language={language} 
-        setLanguage={(l) => { setLanguage(l); localStorage.setItem('pos_lang', l); }} 
-        storeName={storeName} onLogout={() => window.location.reload()} logoUrl={logoUrl} themeColor={themeColor} 
-      />
+      <Sidebar currentMode={mode} onModeChange={setMode} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} language={language} setLanguage={(l) => { setLanguage(l); localStorage.setItem('pos_lang', l); }} storeName={storeName} onLogout={() => window.location.reload()} logoUrl={logoUrl} themeColor={themeColor} />
       <main className="flex-1 flex flex-col overflow-hidden bg-white relative">
         <div className="flex-1 overflow-hidden">
           {mode === 'DASHBOARD' && renderDashboard()}
@@ -618,14 +453,8 @@ const App: React.FC = () => {
                <h2 className="text-4xl font-black uppercase tracking-tighter">{t.settings}</h2>
                <div className="bg-white p-12 rounded-[3.5rem] border shadow-luxury space-y-10">
                  <div className="flex flex-col items-center gap-6">
-                    <div className="w-40 h-40 rounded-[2.5rem] bg-slate-50 p-2 relative group overflow-hidden border-2 border-dashed border-slate-200 shadow-premium">
-                      <img src={logoUrl} className="w-full h-full object-cover rounded-[2rem]" alt="Store Logo" />
-                      <button onClick={() => logoInputRef.current?.click()} className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-opacity"><ImageIcon size={24}/><span className="text-[10px] font-black uppercase tracking-widest">Change Logo</span></button>
-                    </div>
-                    <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => {
-                      const file = e.target.files?.[0]; if (!file) return;
-                      const r = new FileReader(); r.onload = (ev) => { const d = ev.target?.result as string; setLogoUrl(d); localStorage.setItem('pos_logo_data', d); }; r.readAsDataURL(file);
-                    }} />
+                    <div className="w-40 h-40 rounded-[2.5rem] bg-slate-50 p-2 relative group overflow-hidden border-2 border-dashed border-slate-200 shadow-premium"><img src={logoUrl} className="w-full h-full object-cover rounded-[2rem]" alt="Store Logo" /><button onClick={() => logoInputRef.current?.click()} className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-opacity"><ImageIcon size={24}/><span className="text-[10px] font-black uppercase tracking-widest">Change Logo</span></button></div>
+                    <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (!file) return; const r = new FileReader(); r.onload = (ev) => { const d = ev.target?.result as string; setLogoUrl(d); localStorage.setItem('pos_logo_data', d); }; r.readAsDataURL(file); }} />
                  </div>
                  <div className="space-y-4"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Store Display Name</label><input value={storeName} onChange={e => { setStoreName(e.target.value); localStorage.setItem('pos_store_name', e.target.value); }} className="w-full p-6 bg-slate-50 border-none rounded-[2rem] font-black outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all" /></div>
                  <div className="space-y-4">
@@ -638,14 +467,10 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Sale Edit Modal */}
       {editingSale && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/80 p-6 backdrop-blur-sm">
           <div className="bg-white w-full max-w-2xl rounded-[3.5rem] p-12 space-y-8 shadow-luxury max-h-[90vh] overflow-y-auto custom-scrollbar relative">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-2xl font-black uppercase tracking-tighter">{t.edit_details} : {editingSale.id}</h3>
-              <button onClick={() => setEditingSale(null)} className="text-slate-300 hover:text-slate-800 transition-colors"><X size={32}/></button>
-            </div>
+            <div className="flex justify-between items-center mb-4"><h3 className="text-2xl font-black uppercase tracking-tighter">{t.edit_details} : {editingSale.id}</h3><button onClick={() => setEditingSale(null)} className="text-slate-300 hover:text-slate-800 transition-colors"><X size={32}/></button></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.cust_name}</label><input value={editingSale.customerName || ''} onChange={e=>setEditingSale({...editingSale, customerName:e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold" /></div>
               <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.cust_phone}</label><input value={editingSale.customerPhone || ''} onChange={e=>setEditingSale({...editingSale, customerPhone:e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl font-bold" /></div>
@@ -665,7 +490,40 @@ const App: React.FC = () => {
       )}
 
       {showPromotionModal && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/80 p-6 backdrop-blur-sm"><div className="bg-white w-full max-w-3xl rounded-[3.5rem] p-12 space-y-10 shadow-luxury max-h-[90vh] overflow-y-auto custom-scrollbar"><div className="flex justify-between items-center mb-6"><h3 className="text-2xl font-black uppercase tracking-tighter">{t.promo_editor}</h3><button onClick={() => setShowPromotionModal(null)} className="text-slate-300 hover:text-slate-800 transition-colors"><X size={32}/></button></div><div className="space-y-6"><input value={showPromotionModal.name || ''} onChange={e => setShowPromotionModal({...showPromotionModal, name: e.target.value})} placeholder="Promo Name" className="w-full p-6 bg-slate-50 border-none rounded-[2rem] font-black outline-none" /><textarea value={showPromotionModal.targetProductIds?.join(', ') || ''} onChange={e => setShowPromotionModal({...showPromotionModal, targetProductIds: e.target.value.split(',').map(s=>s.trim()).filter(s=>s)})} placeholder="Target SKUs" className="w-full p-6 bg-slate-50 border-none rounded-[2rem] font-bold outline-none h-24" /><div className="space-y-4"><div className="flex justify-between items-center px-4"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.bill_discount} Steps ({showPromotionModal.steps?.length || 0}/10)</p>{(showPromotionModal.steps?.length || 0) < 10 && (<button onClick={() => setShowPromotionModal({...showPromotionModal, steps: [...(showPromotionModal.steps || []), {minQty: (showPromotionModal.steps?.length || 0) + 1, price: 0}]})} className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">+ {t.add_step}</button>)}</div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{showPromotionModal.steps?.map((step, idx) => (<div key={idx} className="flex gap-2 items-center bg-slate-50 p-4 rounded-[2rem] border border-slate-100 relative group"><div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black flex-shrink-0">{idx+1}</div><div className="flex-1 space-y-1"><label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.min_qty}</label><input type="number" value={step.minQty} onChange={e => { const ns = [...(showPromotionModal.steps || [])]; ns[idx].minQty = Number(e.target.value); setShowPromotionModal({...showPromotionModal, steps: ns}); }} className="w-full p-2 bg-white rounded-xl font-black text-xs outline-none shadow-sm" /></div><div className="flex-[2] space-y-1"><label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.price_per_unit}</label><input type="number" value={step.price} onChange={e => { const ns = [...(showPromotionModal.steps || [])]; ns[idx].price = Number(e.target.value); setShowPromotionModal({...showPromotionModal, steps: ns}); }} className="w-full p-2 bg-white text-indigo-700 rounded-xl font-black text-xs outline-none shadow-sm" /></div><button onClick={() => { const ns = (showPromotionModal.steps || []).filter((_,i) => i !== idx); setShowPromotionModal({...showPromotionModal, steps: ns}); }} className="p-2 text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"><Trash2 size={16}/></button></div>))}</div></div></div><div className="flex gap-4 mt-10"><button onClick={() => setShowPromotionModal(null)} className="flex-1 py-5 bg-slate-100 text-slate-500 rounded-[1.5rem] font-black uppercase text-[10px]">Cancel</button><button onClick={async () => { const id = showPromotionModal.id || `promo-${Date.now()}`; await performSave('promotions', id, { ...showPromotionModal, id }); setShowPromotionModal(null); }} className="flex-1 py-5 bg-slate-900 text-white rounded-[1.5rem] font-black uppercase text-[10px] shadow-luxury" style={{ backgroundColor: themeColor }}>Save Promo</button></div></div></div>
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/80 p-6 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-3xl rounded-[3.5rem] p-12 space-y-10 shadow-luxury max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div className="flex justify-between items-center mb-6"><h3 className="text-2xl font-black uppercase tracking-tighter">{t.promo_editor}</h3><button onClick={() => setShowPromotionModal(null)} className="text-slate-300 hover:text-slate-800 transition-colors"><X size={32}/></button></div>
+            <div className="space-y-6">
+              <input value={showPromotionModal.name || ''} onChange={e => setShowPromotionModal({...showPromotionModal, name: e.target.value})} placeholder="Promo Name" className="w-full p-6 bg-slate-50 border-none rounded-[2rem] font-black outline-none" />
+              <div className="space-y-2">
+                <div className="flex justify-between px-4"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Target SKUs (Comma separated)</label><span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Count: {showPromotionModal.targetProductIds?.length || 0} / 50</span></div>
+                <textarea 
+                  value={showPromotionModal.targetProductIds?.join(', ') || ''} 
+                  onChange={e => {
+                    const ids = e.target.value.split(',').map(s=>s.trim()).filter(s=>s);
+                    setShowPromotionModal({...showPromotionModal, targetProductIds: ids.slice(0, 50)});
+                  }} 
+                  placeholder="Enter SKUs separated by comma (e.g. A01, A02, B05...)" 
+                  className="w-full p-6 bg-slate-50 border-none rounded-[2rem] font-bold outline-none h-40 resize-none shadow-inner" 
+                />
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center px-4"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Price Steps ({showPromotionModal.steps?.length || 0}/10)</p>{(showPromotionModal.steps?.length || 0) < 10 && (<button onClick={() => setShowPromotionModal({...showPromotionModal, steps: [...(showPromotionModal.steps || []), {minQty: (showPromotionModal.steps?.length || 0) + 1, price: 0}]})} className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">+ {t.add_step}</button>)}</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {showPromotionModal.steps?.map((step, idx) => (
+                    <div key={idx} className="flex gap-2 items-center bg-slate-50 p-4 rounded-[2rem] border border-slate-100 relative group">
+                      <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black flex-shrink-0">{idx+1}</div>
+                      <div className="flex-1 space-y-1"><label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.min_qty}</label><input type="number" value={step.minQty} onChange={e => { const ns = [...(showPromotionModal.steps || [])]; ns[idx].minQty = Number(e.target.value); setShowPromotionModal({...showPromotionModal, steps: ns}); }} className="w-full p-2 bg-white rounded-xl font-black text-xs outline-none shadow-sm" /></div>
+                      <div className="flex-[2] space-y-1"><label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">{t.price_per_unit}</label><input type="number" value={step.price} onChange={e => { const ns = [...(showPromotionModal.steps || [])]; ns[idx].price = Number(e.target.value); setShowPromotionModal({...showPromotionModal, steps: ns}); }} className="w-full p-2 bg-white text-indigo-700 rounded-xl font-black text-xs outline-none shadow-sm" /></div>
+                      <button onClick={() => { const ns = (showPromotionModal.steps || []).filter((_,i) => i !== idx); setShowPromotionModal({...showPromotionModal, steps: ns}); }} className="p-2 text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"><Trash2 size={16}/></button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-4 mt-10"><button onClick={() => setShowPromotionModal(null)} className="flex-1 py-5 bg-slate-100 text-slate-500 rounded-[1.5rem] font-black uppercase text-[10px]">Cancel</button><button onClick={async () => { const id = showPromotionModal.id || `promo-${Date.now()}`; await performSave('promotions', id, { ...showPromotionModal, id }); setShowPromotionModal(null); }} className="flex-1 py-5 bg-slate-900 text-white rounded-[1.5rem] font-black uppercase text-[10px] shadow-luxury" style={{ backgroundColor: themeColor }}>Save Promo</button></div>
+          </div>
+        </div>
       )}
     </div>
   );
