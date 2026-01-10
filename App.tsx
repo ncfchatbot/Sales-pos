@@ -71,7 +71,6 @@ const App: React.FC = () => {
     return `${new Intl.NumberFormat('en-US').format(v)}${sym}`;
   };
 
-  // Helper to apply promotion logic to cart items
   const applyPromotions = (items: CartItem[]): CartItem[] => {
     return items.map(item => {
       const promo = promotions.find(p => p.active && p.targetProductIds.includes(item.code));
@@ -110,6 +109,11 @@ const App: React.FC = () => {
 
   const updateCartQuantity = (id: string, delta: number) => {
     const newCart = cart.map(i => i.id === id ? { ...i, quantity: Math.max(0, i.quantity + delta) } : i).filter(i => i.quantity > 0);
+    setCart(applyPromotions(newCart));
+  };
+
+  const setCartQuantity = (id: string, qty: number) => {
+    const newCart = cart.map(i => i.id === id ? { ...i, quantity: Math.max(0, qty) } : i).filter(i => i.quantity > 0);
     setCart(applyPromotions(newCart));
   };
 
@@ -340,7 +344,16 @@ const App: React.FC = () => {
               {cart.map(item => (
                 <div key={item.id} className="flex justify-between items-center bg-slate-50 p-4 rounded-3xl border border-slate-100">
                   <div className="flex-1 pr-4"><p className="font-bold text-sm text-slate-800 line-clamp-1">{item.name}</p><p className="text-xs font-black text-indigo-600">{formatMoney(item.price)}</p></div>
-                  <div className="flex items-center gap-3"><button onClick={() => updateCartQuantity(item.id, -1)} className="w-8 h-8 rounded-xl bg-white border flex items-center justify-center text-slate-400 hover:text-danger"><Minus size={14}/></button><span className="w-6 text-center font-black">{item.quantity}</span><button onClick={() => updateCartQuantity(item.id, 1)} className="w-8 h-8 rounded-xl bg-white border flex items-center justify-center text-slate-400 hover:text-indigo-600"><Plus size={14}/></button></div>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => updateCartQuantity(item.id, -1)} className="w-8 h-8 rounded-xl bg-white border flex items-center justify-center text-slate-400 hover:text-danger"><Minus size={14}/></button>
+                    <input 
+                      type="number" 
+                      value={item.quantity} 
+                      onChange={(e) => setCartQuantity(item.id, parseInt(e.target.value) || 0)}
+                      className="w-14 text-center font-black bg-transparent border-none outline-none focus:ring-0 text-sm"
+                    />
+                    <button onClick={() => updateCartQuantity(item.id, 1)} className="w-8 h-8 rounded-xl bg-white border flex items-center justify-center text-slate-400 hover:text-indigo-600"><Plus size={14}/></button>
+                  </div>
                 </div>
               ))}
               {cart.length === 0 && <div className="text-center py-10 opacity-20"><ShoppingCart size={64} className="mx-auto mb-4"/><p className="text-[10px] font-black uppercase tracking-widest">Cart is empty</p></div>}
