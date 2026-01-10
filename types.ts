@@ -2,76 +2,72 @@
 export interface Product {
   id: string;
   name: string;
+  code: string;
   cost: number;
   price: number;
   category: string;
   stock: number;
 }
 
-export interface PromotionTier {
+export interface CartItem extends Product {
   quantity: number;
+  originalPrice: number;
+  discountValue: number;
+  discountType: 'amount' | 'percent';
+}
+
+export enum UserRole {
+  OWNER = 'OWNER',
+  STAFF = 'STAFF'
+}
+
+// Added DiscountType enum to fix errors in DiscountSelector.tsx
+export enum DiscountType {
+  PERCENTAGE = 'percent',
+  FIXED = 'amount'
+}
+
+// Added Discount interface to fix errors in DiscountSelector.tsx
+export interface Discount {
+  type: DiscountType;
+  value: number;
+}
+
+export interface PromotionStep {
+  minQty: number;
   price: number;
 }
 
 export interface Promotion {
   id: string;
   name: string;
-  productIds: string[]; // Supports up to 100 SKUs
-  tiers: PromotionTier[];
-  isActive: boolean;
+  active: boolean;
+  targetProductIds: string[]; // Updated to support multiple SKUs
+  steps: PromotionStep[];
 }
 
-export interface CartItem extends Product {
-  quantity: number;
-  itemDiscount?: Discount;
-  originalPrice: number;
-}
-
-export enum DiscountType {
-  PERCENTAGE = 'PERCENTAGE',
-  FIXED = 'FIXED'
-}
-
-export interface Discount {
-  type: DiscountType;
-  value: number;
-}
-
-export interface OrderSummary {
-  subtotal: number;
-  itemDiscountTotal: number;
-  billDiscountAmount: number;
-  total: number;
-  profit: number; 
-}
-
-export type TransactionStatus = 'completed' | 'cancelled';
-export type PaymentStatus = 'paid' | 'pending';
-export type PaymentMethod = 'transfer' | 'cod' | 'cash';
-export type ShippingCarrier = 'anouchit' | 'mixay' | 'roung_aloun' | 'pickup' | '';
-
-export interface Transaction extends OrderSummary {
+export interface SaleRecord {
   id: string;
-  timestamp: Date;
   items: CartItem[];
-  status: TransactionStatus;
-  paymentStatus: PaymentStatus;
+  subtotal: number;
+  billDiscountValue: number;
+  billDiscountType: 'amount' | 'percent';
+  total: number;
+  timestamp: number;
+  status: OrderStatus;
   paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
   customerName: string;
-  customerAddress: string;
   customerPhone: string;
-  shippingCarrier: ShippingCarrier;
-  shippingBranch: string;
-  appliedDiscount: Discount | null;
+  customerAddress: string;
+  logistics: LogisticsProvider;
+  destinationBranch?: string;
+  createdByRole: UserRole;
 }
 
-export interface ShopSettings {
-  name: string;
-  address: string;
-  phone: string;
-  logo: string; 
-  logoType: 'emoji' | 'image';
-}
-
-export type View = 'dashboard' | 'pos' | 'stock' | 'reports' | 'settings' | 'promotions';
-export type Language = 'TH' | 'LA' | 'EN';
+export type OrderStatus = 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled';
+export type PaymentMethod = 'Cash' | 'Transfer' | 'COD';
+export type PaymentStatus = 'Paid' | 'Outstanding';
+export type LogisticsProvider = 'อนุชิต' | 'มีไช' | 'รุ่งอรุณ' | 'รับสินค้าเอง';
+export type AppMode = 'DASHBOARD' | 'ORDERS' | 'STOCK' | 'REPORTS' | 'SETTINGS' | 'PROMOTIONS';
+export type Language = 'th' | 'lo' | 'en';

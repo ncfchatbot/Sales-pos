@@ -3,11 +3,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gemini POS Pro | Luxury Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SMART POS PRO | Luxury Edition</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -17,66 +17,73 @@
               sans: ['"Plus Jakarta Sans"', 'sans-serif'],
             },
             colors: {
-              primary: '#6366f1',
-              secondary: '#4f46e5',
-              accent: '#0ea5e9',
+              primary: '#4338ca',
+              secondary: '#1e1b4b',
+              accent: '#818cf8',
               danger: '#f43f5e',
               success: '#10b981',
-              dark: '#0f172a'
+              dark: '#020617',
+              gold: '#fbbf24'
             },
             borderRadius: {
               '4xl': '2rem',
-              '5xl': '3rem',
+              '5xl': '3.5rem',
+            },
+            boxShadow: {
+              'premium': '0 20px 50px rgba(0, 0, 0, 0.05)',
+              'luxury': '0 30px 100px -20px rgba(0, 0, 0, 0.2)',
             }
           }
         }
       }
     </script>
+    <style>
+      body { background-color: #f8fafc; color: #0f172a; -webkit-font-smoothing: antialiased; touch-action: manipulation; }
+      .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      
+      @media print {
+        body * { visibility: hidden !important; }
+        #print-container, #print-container * { visibility: visible !important; }
+        #print-container { 
+          position: absolute; left: 0; top: 0; width: 100% !important; 
+          margin: 0 !important; padding: 0 !important; 
+        }
+      }
+      #print-container { display: none; }
+
+      /* Mobile optimization */
+      @media (max-width: 768px) {
+        .mobile-safe-area { padding-bottom: env(safe-area-inset-bottom); }
+      }
+    </style>
+    <!-- Polyfill for older mobile browsers -->
+    <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js"></script>
     <script type="importmap">
     {
       "imports": {
-        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-        "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+        "react": "https://esm.sh/react@^19.2.3",
         "react/": "https://esm.sh/react@^19.2.3/",
-        "react": "https://esm.sh/react@^19.2.3"
+        "react-dom": "https://esm.sh/react-dom@^19.2.3",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "lucide-react": "https://esm.sh/lucide-react@0.460.0",
+        "xlsx": "https://esm.sh/xlsx@0.18.5",
+        "@google/genai": "https://esm.sh/@google/genai@^1.35.0"
       }
     }
     </script>
-    <style>
-      body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        background-color: #f8fafc;
-      }
-      .glass {
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-      }
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-      
-      /* PRINT ENGINE STYLES */
-      @media print {
-        body * { visibility: hidden !important; }
-        #print-receipt, #print-receipt * { visibility: visible !important; }
-        #print-receipt { 
-          position: absolute; 
-          left: 0; 
-          top: 0; 
-          width: 100% !important; 
-          margin: 0 !important; 
-          padding: 0 !important; 
-        }
-        @page { size: auto; margin: 0; }
-      }
-      #print-receipt { display: block; position: fixed; left: -9999px; }
-    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <div id="print-receipt"></div>
+    <div id="root">
+      <div style="height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif; background: #020617; color: white;">
+        <div style="text-align: center;">
+          <div style="width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #4338ca; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
+          <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+          <p style="font-weight: 800; letter-spacing: 2px; font-size: 12px; opacity: 0.5;">INITIALIZING LUXURY POS...</p>
+        </div>
+      </div>
+    </div>
+    <div id="print-container"></div>
     <script type="module" src="index.tsx"></script>
   </body>
 </html>

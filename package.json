@@ -9,9 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "@google/genai": "^1.34.0",
-    "react": "^19.2.3"
+    "lucide-react": "0.460.0",
+    "xlsx": "0.18.5",
+    "@google/genai": "^1.35.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
