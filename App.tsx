@@ -14,6 +14,7 @@ import {
 } from './types';
 import { TRANSLATIONS } from './constants.tsx';
 import Sidebar from './components/Sidebar';
+import { ProductCard } from './components/ProductCard';
 import { getDb, collection, onSnapshot, query, orderBy, doc, setDoc, updateDoc, deleteDoc, getDoc } from './services/firebase';
 import * as XLSX from 'xlsx';
 
@@ -322,37 +323,34 @@ const App: React.FC = () => {
   const renderPOS = () => {
     const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.code.toLowerCase().includes(searchTerm.toLowerCase()));
     return (
-      <div className="flex h-full overflow-hidden">
-        <div className="flex-1 flex flex-col p-8 overflow-hidden">
-          <div className="mb-8 relative">
+      <div className="flex h-full overflow-hidden flex-col xl:flex-row">
+        <div className="flex-1 flex flex-col p-4 md:p-8 overflow-hidden">
+          <div className="mb-6 relative lg:mt-0 mt-16">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={24} />
-            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search SKU or Name..." className="w-full pl-16 pr-8 py-5 bg-white border border-slate-100 rounded-[2.5rem] shadow-premium outline-none font-bold" />
+            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search SKU or Name..." className="w-full pl-16 pr-8 py-5 bg-white border border-slate-100 rounded-[2.5rem] shadow-premium outline-none font-bold text-sm" />
           </div>
-          <div className="flex-1 overflow-y-auto grid grid-cols-2 xl:grid-cols-4 gap-6 pr-4 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 pr-2 custom-scrollbar">
             {filtered.map(p => (
-              <button key={p.id} onClick={() => addToCart(p)} className="bg-white p-6 rounded-[2.5rem] border border-white shadow-premium hover:shadow-luxury hover:-translate-y-2 transition-all text-left flex flex-col justify-between group active:scale-95">
-                <div className="space-y-2"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{p.code}</p><p className="font-black text-slate-800 line-clamp-2 leading-tight">{p.name}</p></div>
-                <div className="mt-4 flex justify-between items-end"><p className="font-black text-indigo-600 text-xl tracking-tighter">{formatMoney(p.price)}</p><div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all"><Plus size={20} /></div></div>
-              </button>
+              <ProductCard key={p.id} product={p} onAdd={addToCart} />
             ))}
           </div>
         </div>
-        <div className="w-[500px] bg-white border-l shadow-luxury flex flex-col z-10 overflow-hidden">
-          <div className="p-8 border-b flex justify-between items-center"><h3 className="text-xl font-black uppercase tracking-tighter">{t.pos}</h3><button onClick={() => { if(confirm(t.clear_cart + '?')) setCart([]); }} className="text-slate-300 hover:text-danger transition-colors"><Trash2 size={24}/></button></div>
-          <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+        <div className="w-full xl:w-[480px] bg-white border-t xl:border-t-0 xl:border-l shadow-luxury flex flex-col z-10 overflow-hidden">
+          <div className="p-6 md:p-8 border-b flex justify-between items-center"><h3 className="text-xl font-black uppercase tracking-tighter">{t.pos}</h3><button onClick={() => { if(confirm(t.clear_cart + '?')) setCart([]); }} className="text-slate-300 hover:text-danger transition-colors"><Trash2 size={24}/></button></div>
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 custom-scrollbar">
             <div className="space-y-4">
               {cart.map(item => (
                 <div key={item.id} className="flex justify-between items-center bg-slate-50 p-4 rounded-3xl border border-slate-100">
-                  <div className="flex-1 pr-4"><p className="font-bold text-sm text-slate-800 line-clamp-1">{item.name}</p><p className="text-xs font-black text-indigo-600">{formatMoney(item.price)}</p></div>
-                  <div className="flex items-center gap-3">
-                    <button onClick={() => updateCartQuantity(item.id, -1)} className="w-8 h-8 rounded-xl bg-white border flex items-center justify-center text-slate-400 hover:text-danger"><Minus size={14}/></button>
+                  <div className="flex-1 pr-4"><p className="font-bold text-sm text-slate-800 line-clamp-1 leading-tight">{item.name}</p><p className="text-xs font-black text-indigo-600 mt-0.5">{formatMoney(item.price)}</p></div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => updateCartQuantity(item.id, -1)} className="w-8 h-8 rounded-xl bg-white border flex items-center justify-center text-slate-400 hover:text-danger active:scale-90"><Minus size={14}/></button>
                     <input 
                       type="number" 
                       value={item.quantity} 
                       onChange={(e) => setCartQuantity(item.id, parseInt(e.target.value) || 0)}
-                      className="w-14 text-center font-black bg-transparent border-none outline-none focus:ring-0 text-sm"
+                      className="w-16 text-center font-black bg-white rounded-xl border-none shadow-sm outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm py-1.5"
                     />
-                    <button onClick={() => updateCartQuantity(item.id, 1)} className="w-8 h-8 rounded-xl bg-white border flex items-center justify-center text-slate-400 hover:text-indigo-600"><Plus size={14}/></button>
+                    <button onClick={() => updateCartQuantity(item.id, 1)} className="w-8 h-8 rounded-xl bg-white border flex items-center justify-center text-slate-400 hover:text-indigo-600 active:scale-90"><Plus size={14}/></button>
                   </div>
                 </div>
               ))}
@@ -364,27 +362,27 @@ const App: React.FC = () => {
                 <input value={customer.name} onChange={e => setCustomer({...customer, name: e.target.value})} placeholder={t.cust_name} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none outline-none focus:ring-2 focus:ring-indigo-500/20" />
                 <input value={customer.phone} onChange={e => setCustomer({...customer, phone: e.target.value})} placeholder={t.cust_phone} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none outline-none focus:ring-2 focus:ring-indigo-500/20" />
               </div>
-              <textarea value={customer.address} onChange={e => setCustomer({...customer, address: e.target.value})} placeholder={t.cust_address} className="w-full p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none outline-none focus:ring-2 focus:ring-indigo-500/20 h-16" />
+              <textarea value={customer.address} onChange={e => setCustomer({...customer, address: e.target.value})} placeholder={t.cust_address} className="w-full p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none outline-none focus:ring-2 focus:ring-indigo-500/20 h-16 resize-none" />
               <div className="grid grid-cols-2 gap-4">
                 <input value={customer.branch} onChange={e => setCustomer({...customer, branch: e.target.value})} placeholder={t.cust_branch} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none outline-none focus:ring-2 focus:ring-indigo-500/20" />
-                <select value={customer.logistics} onChange={e => setCustomer({...customer, logistics: e.target.value as any})} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold outline-none">
+                <select value={customer.logistics} onChange={e => setCustomer({...customer, logistics: e.target.value as any})} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold outline-none border-none">
                   <option value="รับสินค้าเอง">รับสินค้าเอง</option><option value="อนุชิต">อนุชิต</option><option value="มีไช">มีไช</option><option value="รุ่งอรุณ">รุ่งอรุณ</option>
                 </select>
               </div>
               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.payment_method} & {t.order_status}</h4>
               <div className="grid grid-cols-2 gap-4">
-                <select value={customer.paymentMethod} onChange={e => setCustomer({...customer, paymentMethod: e.target.value as any})} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold"><option value="Cash">Cash</option><option value="Transfer">Transfer</option><option value="COD">COD</option></select>
-                <select value={customer.paymentStatus} onChange={e => setCustomer({...customer, paymentStatus: e.target.value as any})} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold"><option value="Paid">Paid</option><option value="Outstanding">Outstanding</option></select>
+                <select value={customer.paymentMethod} onChange={e => setCustomer({...customer, paymentMethod: e.target.value as any})} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none"><option value="Cash">Cash</option><option value="Transfer">Transfer</option><option value="COD">COD</option></select>
+                <select value={customer.paymentStatus} onChange={e => setCustomer({...customer, paymentStatus: e.target.value as any})} className="p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none"><option value="Paid">Paid</option><option value="Outstanding">Outstanding</option></select>
               </div>
-              <select value={customer.orderStatus} onChange={e => setCustomer({...customer, orderStatus: e.target.value as any})} className="w-full p-4 bg-indigo-50 text-indigo-700 rounded-2xl text-[10px] font-black uppercase"><option value="Completed">Auto-Complete (Cut Stock)</option><option value="Pending">Pending (No Cut Stock)</option></select>
+              <select value={customer.orderStatus} onChange={e => setCustomer({...customer, orderStatus: e.target.value as any})} className="w-full p-4 bg-indigo-50 text-indigo-700 rounded-2xl text-[10px] font-black uppercase border-none outline-none focus:ring-2 focus:ring-indigo-500/20"><option value="Completed">Auto-Complete (Cut Stock)</option><option value="Pending">Pending (No Cut Stock)</option></select>
             </div>
           </div>
-          <div className="p-8 bg-slate-50 border-t space-y-6">
+          <div className="p-6 md:p-8 bg-slate-50 border-t space-y-6">
             <div className="space-y-4">
               <div className="flex justify-between items-center"><span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.bill_discount}</span><div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border"><span className="text-[10px] font-black text-slate-300 tracking-tighter uppercase">LAK</span><input type="number" value={billDiscount || ''} onChange={e => setBillDiscount(Number(e.target.value))} className="w-24 text-right font-black outline-none bg-transparent" placeholder="0" /></div></div>
-              <div className="flex justify-between items-end"><span className="text-sm font-black text-slate-800 uppercase tracking-widest">{t.grand_total}</span><span className="text-4xl font-black text-indigo-600 tracking-tighter">{formatMoney(calculateFinalTotal())}</span></div>
+              <div className="flex justify-between items-end"><span className="text-sm font-black text-slate-800 uppercase tracking-widest">{t.grand_total}</span><span className="text-3xl md:text-4xl font-black text-indigo-600 tracking-tighter">{formatMoney(calculateFinalTotal())}</span></div>
             </div>
-            <button onClick={handleCheckout} className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black text-lg shadow-luxury active:scale-95 transition-all" style={{ backgroundColor: themeColor }}>{t.checkout}</button>
+            <button onClick={handleCheckout} className="w-full py-5 md:py-6 bg-slate-900 text-white rounded-[2rem] font-black text-lg shadow-luxury active:scale-95 transition-all" style={{ backgroundColor: themeColor }}>{t.checkout}</button>
           </div>
         </div>
       </div>
@@ -393,9 +391,9 @@ const App: React.FC = () => {
 
   const renderStock = () => (
     <div className="p-8 space-y-8 h-full flex flex-col bg-slate-50/50">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 lg:mt-0 mt-16">
         <div><h2 className="text-3xl font-black uppercase tracking-tighter">{t.stock}</h2><p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{t.inventory_checklist}</p></div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button onClick={() => { setEditingProduct({ name: '', code: '', cost: 0, price: 0, stock: 0, category: 'ทั่วไป' }); setShowProductModal(true); }} className="px-6 py-4 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-luxury" style={{ backgroundColor: themeColor }}><Plus size={16}/> Add Item</button>
           <button onClick={() => { const ws = XLSX.utils.json_to_sheet([{ 'รหัสสินค้า': 'SKU001', 'ชื่อสินค้า': 'ตัวอย่างสินค้า', 'ราคาทุน': 5000, 'ราคาขาย': 15000, 'สต็อก': 100, 'หมวดหมู่': 'ทั่วไป' }]); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Template"); XLSX.writeFile(wb, "Stock_Template.xlsx"); }} className="px-6 py-4 bg-white border rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-premium hover:bg-slate-50 transition-all"><Download size={16}/> {t.download_template}</button>
           <button onClick={() => bulkInputRef.current?.click()} className="px-6 py-4 bg-white border rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-premium hover:bg-slate-50 transition-all"><FileUp size={16}/> {t.import_excel}</button>
@@ -421,7 +419,7 @@ const App: React.FC = () => {
 
   const renderReports = () => (
     <div className="p-8 space-y-8 h-full flex flex-col bg-slate-50/50">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 lg:mt-0 mt-16">
         <div><h2 className="text-3xl font-black uppercase tracking-tighter">{t.reports}</h2><p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{t.bill_management}</p></div>
         <div className="flex gap-3">
           <button onClick={async () => { if(confirm(t.delete_all + '?')) { for(const s of sales) await deleteDoc(doc(getDb(), `pos_v4/${storeId}/sales`, s.id)); } }} className="px-6 py-4 bg-rose-50 text-rose-600 border border-rose-100 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-rose-100 transition-all"><Trash2 size={16}/> {t.delete_all}</button>
@@ -448,6 +446,13 @@ const App: React.FC = () => {
     <div className="flex h-screen overflow-hidden">
       <Sidebar currentMode={mode} onModeChange={setMode} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} language={language} setLanguage={(l) => { setLanguage(l); localStorage.setItem('pos_lang', l); }} storeName={storeName} onLogout={() => window.location.reload()} logoUrl={logoUrl} themeColor={themeColor} />
       <main className="flex-1 flex flex-col overflow-hidden bg-white relative">
+        <button 
+          onClick={() => setIsSidebarOpen(true)}
+          className="lg:hidden absolute top-6 left-6 z-[100] p-4 bg-white/80 backdrop-blur-md shadow-premium rounded-3xl text-slate-600 border border-slate-100 active:scale-95 transition-all"
+        >
+          <Menu size={24} />
+        </button>
+
         <div className="flex-1 overflow-hidden">
           {mode === 'DASHBOARD' && renderDashboard()}
           {mode === 'ORDERS' && renderPOS()}
@@ -455,7 +460,7 @@ const App: React.FC = () => {
           {mode === 'REPORTS' && renderReports()}
           {mode === 'PROMOTIONS' && (
              <div className="p-8 space-y-8 h-full flex flex-col bg-slate-50/50">
-                <div className="flex justify-between items-center"><div><h2 className="text-3xl font-black uppercase tracking-tighter">{t.promotions}</h2><p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Pricing Rules</p></div><button onClick={()=>setShowPromotionModal({name:'',active:true,targetProductIds:[],steps:[{minQty:1,price:0}]})} className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-luxury" style={{ backgroundColor: themeColor }}>+ Create Promo</button></div>
+                <div className="flex justify-between items-center lg:mt-0 mt-16"><div><h2 className="text-3xl font-black uppercase tracking-tighter">{t.promotions}</h2><p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Pricing Rules</p></div><button onClick={()=>setShowPromotionModal({name:'',active:true,targetProductIds:[],steps:[{minQty:1,price:0}]})} className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-luxury" style={{ backgroundColor: themeColor }}>+ Create Promo</button></div>
                 <div className="flex-1 bg-white rounded-[3rem] shadow-premium border border-white overflow-hidden overflow-y-auto custom-scrollbar">
                    <table className="w-full text-left"><thead className="bg-white border-b sticky top-0"><tr><th className="p-6 text-[10px] font-black uppercase text-slate-400">Name</th><th className="p-6 text-[10px] font-black uppercase text-slate-400">Steps</th><th className="p-6 text-right">Actions</th></tr></thead><tbody className="divide-y divide-slate-50">{promotions.map(p=>(<tr key={p.id} className="hover:bg-slate-50"><td className="p-6 font-black text-slate-800">{p.name}</td><td className="p-6">{p.steps.map((s,i)=>(<div key={i} className="text-[10px] font-bold text-indigo-600">{s.minQty}+: {formatMoney(s.price)}</div>))}</td><td className="p-6 text-right"><button onClick={()=>setShowPromotionModal(p)} className="p-3 text-slate-300 hover:text-indigo-600"><Edit3 size={18}/></button><button onClick={async()=>await deleteDoc(doc(getDb(),`pos_v4/${storeId}/promotions`,p.id))} className="p-3 text-slate-300 hover:text-rose-500"><Trash2 size={18}/></button></td></tr>))}</tbody></table>
                 </div>
@@ -463,7 +468,7 @@ const App: React.FC = () => {
           )}
           {mode === 'SETTINGS' && (
              <div className="p-12 max-w-4xl mx-auto space-y-12 h-full overflow-y-auto custom-scrollbar">
-               <h2 className="text-4xl font-black uppercase tracking-tighter">{t.settings}</h2>
+               <h2 className="text-4xl font-black uppercase tracking-tighter lg:mt-0 mt-8">{t.settings}</h2>
                <div className="bg-white p-12 rounded-[3.5rem] border shadow-luxury space-y-10">
                  <div className="flex flex-col items-center gap-6">
                     <div className="w-40 h-40 rounded-[2.5rem] bg-slate-50 p-2 relative group overflow-hidden border-2 border-dashed border-slate-200 shadow-premium"><img src={logoUrl} className="w-full h-full object-cover rounded-[2rem]" alt="Store Logo" /><button onClick={() => logoInputRef.current?.click()} className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-opacity"><ImageIcon size={24}/><span className="text-[10px] font-black uppercase tracking-widest">Change Logo</span></button></div>
