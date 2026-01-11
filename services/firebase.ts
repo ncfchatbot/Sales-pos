@@ -1,4 +1,3 @@
-
 import { initializeApp } from 'firebase/app';
 import { 
   getFirestore, 
@@ -13,21 +12,21 @@ import {
   getDoc 
 } from 'firebase/firestore';
 
-// หมายเหตุ: กรุณาเปลี่ยน config ด้านล่างนี้ให้เป็นของ Firebase Project ของท่าน
-// หากยังไม่ได้ตั้งค่า ระบบจะพยายามเชื่อมต่อผ่านค่าพื้นฐานที่ระบบต้องการ
+// WARNING: Replace with your actual Firebase config to sync with your phone app.
+// Ensure the apiKey and other fields match exactly what is used in your mobile application.
 const firebaseConfig = {
-  apiKey: "AIzaSy...", // ใส่ API Key ของท่านที่ได้จาก Firebase Console
-  authDomain: "cfp-pos-v4.firebaseapp.com",
-  projectId: "cfp-pos-v4",
-  storageBucket: "cfp-pos-v4.appspot.com",
-  messagingSenderId: "772183955627",
-  appId: "1:772183955627:web:8c5b0b30c1e548f0"
+  apiKey: "AIzaSyD20V5lPSlcdjSrkB_6TF_cLorY7fuKTE0",
+  authDomain: "cfp-webapp-db.firebaseapp.com",
+  projectId: "cfp-webapp-db",
+  storageBucket: "cfp-webapp-db.firebasestorage.app",
+  messagingSenderId: "153424490844",
+  appId: "1:153424490844:web:c82e38ecf5f6f91394d199"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Fixed: Export getDb as a function to resolve 'not callable' errors in App.tsx
+// Export as a function to avoid 'not callable' errors and ensure a clean reference
 export const getDb = () => db;
 
 export { 
