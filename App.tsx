@@ -4,7 +4,8 @@ import {
   Plus, Minus, Trash2, Search, TrendingUp, Box, DollarSign, Download, 
   FileUp, Printer, Eye, X, CheckCircle2, RefreshCw, Menu, Loader2,
   User, Truck, CreditCard, Ban, FileSpreadsheet, Percent, AlertTriangle,
-  Edit3, CheckSquare, Square, Image as ImageIcon, Palette, FileText, Users
+  Edit3, CheckSquare, Square, Image as ImageIcon, Palette, FileText, Users,
+  Database, Wifi, WifiOff, Terminal
 } from 'lucide-react';
 import { 
   AppMode, Product, CartItem, SaleRecord, Language, 
@@ -18,7 +19,8 @@ import { getDb, collection, onSnapshot, query, orderBy, doc, setDoc, updateDoc, 
 import * as XLSX from 'xlsx';
 
 const App: React.FC = () => {
-  const [storeId] = useState('PRO_TERMINAL_01');
+  // Load Store ID from localStorage or default
+  const [storeId, setStoreId] = useState(() => localStorage.getItem('pos_store_id') || 'PRO_TERMINAL_01');
   const [language, setLanguage] = useState<Language>('th');
   const t = TRANSLATIONS[language];
 
@@ -34,6 +36,7 @@ const App: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const [billDiscount, setBillDiscount] = useState(0);
   const [customer, setCustomer] = useState({
@@ -52,6 +55,23 @@ const App: React.FC = () => {
 
   const bulkInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+
+  // Monitor Online Status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Save Store ID to localStorage
+  useEffect(() => {
+    localStorage.setItem('pos_store_id', storeId);
+  }, [storeId]);
 
   // Load & Sync App Settings from Firestore
   useEffect(() => {
@@ -392,6 +412,17 @@ const App: React.FC = () => {
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar currentMode={mode} onModeChange={setMode} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} language={language} setLanguage={(l) => updateAppSetting('language', l)} storeName={storeName} onLogout={() => window.location.reload()} logoUrl={logoUrl} themeColor={themeColor} />
+      
+      {/* Sync Status Indicator */}
+      <div className="fixed bottom-6 right-6 z-[1000] flex items-center gap-3 px-5 py-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-luxury border border-white">
+        <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-rose-500 shadow-[0_0_10px_#f43f5e]'}`}></div>
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+          {isOnline ? 'Cloud Synced' : 'Offline Mode'}
+        </p>
+        <span className="w-px h-3 bg-slate-200 mx-1"></span>
+        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">ID: {storeId}</p>
+      </div>
+
       <main className="flex-1 flex flex-col overflow-hidden bg-white relative">
         <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden absolute top-6 left-6 z-[100] p-4 bg-white/80 backdrop-blur-md shadow-premium rounded-3xl text-slate-600 border border-slate-100 active:scale-95 transition-all"><Menu size={24} /></button>
         <div className="flex-1 overflow-hidden">
@@ -410,7 +441,10 @@ const App: React.FC = () => {
           {mode === 'SETTINGS' && (
              <div className="p-12 max-w-4xl mx-auto space-y-12 h-full overflow-y-auto custom-scrollbar">
                <h2 className="text-4xl font-black uppercase tracking-tighter lg:mt-0 mt-8">{t.settings}</h2>
+               
+               {/* Store Info Card */}
                <div className="bg-white p-12 rounded-[3.5rem] border shadow-luxury space-y-10">
+                 <h3 className="text-xl font-black uppercase tracking-tighter flex items-center gap-3"><LayoutDashboard className="text-indigo-500" /> Store Profile</h3>
                  <div className="flex flex-col items-center gap-6">
                     <div className="w-40 h-40 rounded-[2.5rem] bg-slate-50 p-2 relative group overflow-hidden border-2 border-dashed border-slate-200 shadow-premium"><img src={logoUrl} className="w-full h-full object-cover rounded-[2rem]" alt="Store Logo" /><button onClick={() => logoInputRef.current?.click()} className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-opacity"><ImageIcon size={24}/><span className="text-[10px] font-black uppercase tracking-widest">Change Logo</span></button></div>
                     <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (!file) return; const r = new FileReader(); r.onload = (ev) => { const d = ev.target?.result as string; updateAppSetting('logoUrl', d); }; r.readAsDataURL(file); }} />
@@ -421,11 +455,42 @@ const App: React.FC = () => {
                    <div className="flex flex-wrap gap-4 px-4 items-center">{['#4338ca', '#f43f5e', '#10b981', '#f59e0b', '#000000'].map(c => (<button key={c} onClick={() => updateAppSetting('themeColor', c)} className={`w-12 h-12 rounded-full border-4 transition-all ${themeColor === c ? 'scale-125 border-slate-900 shadow-xl' : 'border-transparent'}`} style={{backgroundColor: c}} />))}<div className="flex items-center gap-3 ml-4 bg-slate-100 px-5 py-3 rounded-2xl border border-slate-200"><Palette size={18} className="text-slate-400" /><input type="color" value={themeColor} onChange={(e) => updateAppSetting('themeColor', e.target.value)} className="w-10 h-10 rounded border-none cursor-pointer p-0 bg-transparent" /><span className="text-[11px] font-black font-mono text-slate-600 uppercase tracking-widest">{themeColor}</span></div></div>
                  </div>
                </div>
+
+               {/* Sync Settings Card */}
+               <div className="bg-slate-900 p-12 rounded-[3.5rem] text-white space-y-8 shadow-luxury relative overflow-hidden">
+                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                 <h3 className="text-xl font-black uppercase tracking-tighter flex items-center gap-3 relative z-10"><Database className="text-indigo-400" /> Database & Synchronization</h3>
+                 <p className="text-slate-400 text-xs font-medium leading-relaxed relative z-10">
+                   ระบุ Terminal ID หรือ Store ID ให้ตรงกับแอปในโทรศัพท์เพื่อให้ข้อมูลซิงค์กันแบบ Real-time ข้ามอุปกรณ์
+                 </p>
+                 <div className="space-y-6 relative z-10">
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-4">Active Terminal ID</label>
+                      <div className="flex gap-3">
+                        <div className="flex-1 relative">
+                          <Terminal className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-600" size={20} />
+                          <input 
+                            value={storeId} 
+                            onChange={e => setStoreId(e.target.value.toUpperCase())} 
+                            placeholder="e.g. SHOP_01" 
+                            className="w-full pl-16 pr-6 py-5 bg-slate-800 border-none rounded-2xl font-black text-white outline-none focus:ring-4 focus:ring-indigo-500/20" 
+                          />
+                        </div>
+                        <button onClick={() => window.location.reload()} className="px-8 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">Connect</button>
+                      </div>
+                    </div>
+                    <div className="p-6 bg-slate-800/50 rounded-2xl border border-slate-700/50 space-y-3">
+                       <div className="flex justify-between items-center"><span className="text-[10px] font-black text-slate-500 uppercase">Cloud Database Path</span><span className="text-[10px] font-black text-indigo-400 uppercase">pos_v4/{storeId}</span></div>
+                       <div className="flex justify-between items-center"><span className="text-[10px] font-black text-slate-500 uppercase">Connection Status</span><span className="text-[10px] font-black text-emerald-400 uppercase">Online & Ready</span></div>
+                    </div>
+                 </div>
+               </div>
              </div>
           )}
         </div>
       </main>
 
+      {/* Modals are unchanged below */}
       {editingSale && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/80 p-6 backdrop-blur-sm">
           <div className="bg-white w-full max-w-2xl rounded-[3.5rem] p-12 space-y-8 shadow-luxury max-h-[90vh] overflow-y-auto custom-scrollbar relative">
