@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, ShoppingCart, Package, ClipboardList, Settings, Tag, 
@@ -12,7 +11,7 @@ import {
   OrderStatus, PaymentMethod, LogisticsProvider, PaymentStatus,
   Promotion, PromotionStep
 } from './types';
-import { TRANSLATIONS } from './constants.tsx';
+import { TRANSLATIONS } from './constants';
 import Sidebar from './components/Sidebar';
 import { ProductCard } from './components/ProductCard';
 import { getDb, collection, onSnapshot, query, orderBy, doc, setDoc, updateDoc, deleteDoc, getDoc } from './services/firebase';

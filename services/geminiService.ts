@@ -1,6 +1,5 @@
-
 import { GoogleGenAI } from "@google/genai";
-import { CartItem } from "../types.ts";
+import { CartItem } from "../types";
 
 export async function getSmartDiscountAdvice(cart: CartItem[]) {
   if (cart.length === 0) return "Add items to the cart to see advice.";

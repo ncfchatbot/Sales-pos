@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { 
   LayoutDashboard, ShoppingCart, Package, 
   ClipboardList, Settings, Tag, RefreshCw, X, Globe
 } from 'lucide-react';
 import { AppMode, Language } from '../types';
-import { TRANSLATIONS } from '../constants.tsx';
+import { TRANSLATIONS } from '../constants';
 
 interface SidebarProps {
   currentMode: AppMode;
